@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="match_parent"
+     android:layout_width="match_parent">
+
+    <PreferenceCategory
+        android:title="Ordering titles">
+
+        <ListPreference
+            android:defaultValue="1"
+            android:entries="@array/sortType"
+            android:title="Change Order"
+            android:entryValues="@array/sortTypeValue"
+            android:key="orderPrefKey"/>
+    </PreferenceCategory>
+
+</PreferenceScreen>
