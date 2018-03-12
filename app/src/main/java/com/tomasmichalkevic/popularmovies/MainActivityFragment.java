@@ -29,7 +29,7 @@ import java.util.concurrent.ExecutionException;
  */
 public class MainActivityFragment extends Fragment {
 
-    private static final String LOG_TAG = MovieAdapter.class.getSimpleName();
+    private static final String LOG_TAG = MainActivityFragment.class.getSimpleName();
 
     private static final String API_KEY = BuildConfig.MOVIE_DB_API_KEY;
 

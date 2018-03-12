@@ -6,9 +6,9 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -16,8 +16,14 @@ import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by tomasmichalkevic on 21/02/2018.
@@ -25,10 +31,17 @@ import java.util.List;
 
 public class DetailsActivity extends Activity {
 
+    private static final String LOG_TAG = DetailsActivity.class.getSimpleName();
+
+    private static final String API_KEY = BuildConfig.MOVIE_DB_API_KEY;
+
+    private final String trailersURL = "http://api.themoviedb.org/3/movie/%d/videos?api_key="+API_KEY;
+
     private List<Trailer> trailerList = new ArrayList<>();
     private RecyclerView recyclerView;
     private TrailerAdapter trailerAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
+    private String movieTrailerAddress = "";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -79,17 +92,60 @@ public class DetailsActivity extends Activity {
         });
 
         recyclerView.setAdapter(trailerAdapter);
-        prepareMockData();
+        movieTrailerAddress = String.format(trailersURL, movie.id);
+        trailerList.clear();
+
+        Collections.addAll(trailerList, getFilteredOutTrailers(getTrailers()));
+
+        trailerAdapter.notifyDataSetChanged();
 
     }
 
-    private void prepareMockData(){
-        Trailer trailer = new Trailer("592199669251414ab10568ec", "en", "US", "fBNpSRtfIUA", "\\\"Offer He Can't Refuse\\\"", "YouTube", 1080, "Clip");
-        trailerList.add(trailer);
+    private Trailer[] getFilteredOutTrailers(Trailer[] videos){
+        ArrayList<Trailer> list = new ArrayList<>();
+        Trailer[] result;
+        for(Trailer trailer: videos){
+            if(trailer.getType().equals("Trailer"))
+            list.add(trailer);
+        }
+        result = new Trailer[list.size()];
+        return list.toArray(result);
+    }
 
-        Trailer trailer1 = new Trailer("592199669251414ab10568ec", "en", "US", "fBNpSRtfIUA", "\\\"Offer He CAN Refuse\\\"", "YouTube", 1080, "Clip");
-        trailerList.add(trailer1);
+    private String getResponseJSON(){
+        String result = "";
 
-        trailerAdapter.notifyDataSetChanged();
+        HttpGetRequest httpGetRequest = new HttpGetRequest();
+
+        try {
+            result = httpGetRequest.execute(movieTrailerAddress).get();
+        } catch (InterruptedException | ExecutionException e) {
+            Log.e(LOG_TAG, "getResponseJSON: ", e);
+        } finally {
+            return result;
+        }
+    }
+
+    private Trailer[] getTrailers(){
+        String result = getResponseJSON();
+        JSONObject jsonObject;
+        Trailer[] trailerArray;
+
+        try {
+            jsonObject = new JSONObject(result);
+            JSONArray trailers = jsonObject.getJSONArray("results");
+            trailerArray = new Trailer[trailers.length()];
+            for(int i = 0; i < trailers.length(); i++){
+                trailerArray[i] = getTrailer((JSONObject) trailers.get(i));
+            }
+            return trailerArray;
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, "JSON malformed", e);
+            return null;
+        }
+    }
+
+    private Trailer getTrailer(JSONObject object) throws JSONException {
+        return new Trailer(object.getString("id"), object.getString("iso_639_1"), object.getString("iso_3166_1"), object.getString("key"), object.getString("name"), object.getString("site"), object.getInt("size"), object.getString("type"));
     }
 }
