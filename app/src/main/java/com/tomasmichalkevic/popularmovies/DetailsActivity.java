@@ -36,12 +36,22 @@ public class DetailsActivity extends Activity {
     private static final String API_KEY = BuildConfig.MOVIE_DB_API_KEY;
 
     private final String trailersURL = "http://api.themoviedb.org/3/movie/%d/videos?api_key="+API_KEY;
+    private final String reviewURL = "http://api.themoviedb.org/3/movie/%d/reviews?api_key="+API_KEY;
 
     private List<Trailer> trailerList = new ArrayList<>();
-    private RecyclerView recyclerView;
+    private List<Review> reviewList = new ArrayList<>();
+
+    private RecyclerView trailerRecyclerView;
     private TrailerAdapter trailerAdapter;
-    private RecyclerView.LayoutManager mLayoutManager;
+
+    private RecyclerView reviewRecyclerView;
+    private ReviewAdapter reviewAdapter;
+
+    private RecyclerView.LayoutManager mLayoutManagerTrailers;
+    private RecyclerView.LayoutManager mLayoutManagerReviews;
+
     private String movieTrailerAddress = "";
+    private String reviewAddress = "";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -55,13 +65,20 @@ public class DetailsActivity extends Activity {
         TextView descriptionTV = findViewById(R.id.description_tv);
         FloatingActionButton fab = findViewById(R.id.favourite_fab);
 
-        recyclerView = findViewById(R.id.trailer_recycler_view);
+        trailerRecyclerView = findViewById(R.id.trailer_recycler_view);
         trailerAdapter = new TrailerAdapter(trailerList);
 
-        recyclerView.setHasFixedSize(true);
+        reviewRecyclerView = findViewById(R.id.review_recycler_view);
+        reviewAdapter = new ReviewAdapter(reviewList);
 
-        mLayoutManager = new LinearLayoutManager(this);
-        recyclerView.setLayoutManager(mLayoutManager);
+        trailerRecyclerView.setHasFixedSize(true);
+        reviewRecyclerView.setHasFixedSize(true);
+
+        mLayoutManagerTrailers = new LinearLayoutManager(this);
+        trailerRecyclerView.setLayoutManager(mLayoutManagerTrailers);
+
+        mLayoutManagerReviews = new LinearLayoutManager(this);
+        reviewRecyclerView.setLayoutManager(mLayoutManagerReviews);
 
         Intent intent = getIntent();
         if (intent == null) {
@@ -91,13 +108,22 @@ public class DetailsActivity extends Activity {
             }
         });
 
-        recyclerView.setAdapter(trailerAdapter);
+        trailerRecyclerView.setAdapter(trailerAdapter);
         movieTrailerAddress = String.format(trailersURL, movie.id);
         trailerList.clear();
 
         Collections.addAll(trailerList, getFilteredOutTrailers(getTrailers()));
 
         trailerAdapter.notifyDataSetChanged();
+
+        reviewRecyclerView.setAdapter(reviewAdapter);
+        reviewAddress = String.format(reviewURL, movie.id);
+        reviewList.clear();
+
+        Collections.addAll(reviewList, getReviews());
+
+
+        reviewAdapter.notifyDataSetChanged();
 
     }
 
@@ -112,13 +138,16 @@ public class DetailsActivity extends Activity {
         return list.toArray(result);
     }
 
-    private String getResponseJSON(){
+    private String getResponseJSON(int choice){
         String result = "";
 
         HttpGetRequest httpGetRequest = new HttpGetRequest();
 
         try {
-            result = httpGetRequest.execute(movieTrailerAddress).get();
+            if(choice == 0)
+                result = httpGetRequest.execute(movieTrailerAddress).get();
+            else if(choice == 1)
+                result = httpGetRequest.execute(reviewAddress).get();
         } catch (InterruptedException | ExecutionException e) {
             Log.e(LOG_TAG, "getResponseJSON: ", e);
         } finally {
@@ -127,7 +156,7 @@ public class DetailsActivity extends Activity {
     }
 
     private Trailer[] getTrailers(){
-        String result = getResponseJSON();
+        String result = getResponseJSON(0);
         JSONObject jsonObject;
         Trailer[] trailerArray;
 
@@ -145,7 +174,30 @@ public class DetailsActivity extends Activity {
         }
     }
 
+    private Review[] getReviews(){
+        String result = getResponseJSON(1);
+        JSONObject jsonObject;
+        Review[] reviewArray;
+
+        try {
+            jsonObject = new JSONObject(result);
+            JSONArray reviews = jsonObject.getJSONArray("results");
+            reviewArray = new Review[reviews.length()];
+            for(int i = 0; i < reviews.length(); i++){
+                reviewArray[i] = getReview((JSONObject) reviews.get(i));
+            }
+            return reviewArray;
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, "JSON malformed", e);
+            return null;
+        }
+    }
+
     private Trailer getTrailer(JSONObject object) throws JSONException {
         return new Trailer(object.getString("id"), object.getString("iso_639_1"), object.getString("iso_3166_1"), object.getString("key"), object.getString("name"), object.getString("site"), object.getInt("size"), object.getString("type"));
+    }
+
+    private Review getReview(JSONObject object) throws JSONException {
+        return new Review(object.getString("id"), object.getString("author"), object.getString("content"), object.getString("url"));
     }
 }
