@@ -53,12 +53,13 @@ import java.util.List;
 
 public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder>{
 
-    private List<Review> reviewList;
+    private final List<Review> reviewList;
 
     public ReviewAdapter(List<Review> reviewList){
         this.reviewList = reviewList;
     }
 
+    @NonNull
     @Override
     public ReviewAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.review_item, parent, false);
@@ -79,9 +80,9 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        public TextView author;
-        public TextView content;
-        public TextView url;
+        public final TextView author;
+        public final TextView content;
+        public final TextView url;
 
         public ViewHolder(View view) {
             super(view);

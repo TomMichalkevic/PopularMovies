@@ -192,7 +192,7 @@ public class FavouritesProvider extends ContentProvider {
     @Override
     public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
-        int numUpdated = 0;
+        int numUpdated;
 
         if (values == null){
             throw new IllegalArgumentException("Cannot have null content values");

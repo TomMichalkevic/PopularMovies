@@ -40,14 +40,17 @@ package com.tomasmichalkevic.popularmovies;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
 import android.preference.PreferenceActivity;
 
 public class SettingsActivity extends PreferenceActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final String KEY_ORDER_PREFERENCE = "orderPrefKey";
+    private static final String KEY_FAVOURITES_VIEW_KEY = "favouriteCheckBox";
 
     private ListPreference orderPreference;
+    private CheckBoxPreference favouriteViewPreference;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -55,6 +58,14 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
         addPreferencesFromResource(R.xml.activity_preferences);
 
         orderPreference = (ListPreference) getPreferenceScreen().findPreference(KEY_ORDER_PREFERENCE);
+        favouriteViewPreference = (CheckBoxPreference) getPreferenceScreen().findPreference(KEY_FAVOURITES_VIEW_KEY);
+
+        boolean isEnabled = favouriteViewPreference.isChecked();
+        if(isEnabled){
+            orderPreference.setEnabled(false);
+        }else{
+            orderPreference.setEnabled(true);
+        }
     }
 
     @Override
@@ -71,6 +82,11 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
     }
 
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if(key.equals(KEY_FAVOURITES_VIEW_KEY)){
+            boolean isEnabled = sharedPreferences.getBoolean(key, false);
+            orderPreference.setEnabled(!isEnabled);
+        }
+
         if (key.equals(KEY_ORDER_PREFERENCE)) {
             orderPreference.setSummary("Current: " + orderPreference.getEntry().toString());
         }

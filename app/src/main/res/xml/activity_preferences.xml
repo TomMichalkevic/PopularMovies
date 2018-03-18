@@ -9,9 +9,14 @@
         <ListPreference
             android:defaultValue="1"
             android:entries="@array/sortType"
-            android:title="Change Order"
             android:entryValues="@array/sortTypeValue"
-            android:key="orderPrefKey"/>
+            android:key="orderPrefKey"
+            android:title="Change Order" />
+        <CheckBoxPreference
+            android:id="@+id/favouriteCheckBox"
+            android:defaultValue="false"
+            android:key="favouriteCheckBox"
+            android:title="Show Favourites Only" />
     </PreferenceCategory>
 
 </PreferenceScreen>

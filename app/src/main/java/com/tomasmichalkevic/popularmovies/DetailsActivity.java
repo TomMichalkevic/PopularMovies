@@ -38,12 +38,14 @@
 
 package com.tomasmichalkevic.popularmovies;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -84,8 +86,8 @@ public class DetailsActivity extends Activity {
     private final String trailersURL = "http://api.themoviedb.org/3/movie/%d/videos?api_key="+API_KEY;
     private final String reviewURL = "http://api.themoviedb.org/3/movie/%d/reviews?api_key="+API_KEY;
 
-    private List<Trailer> trailerList = new ArrayList<>();
-    private List<Review> reviewList = new ArrayList<>();
+    private final List<Trailer> trailerList = new ArrayList<>();
+    private final List<Review> reviewList = new ArrayList<>();
 
     private RecyclerView trailerRecyclerView;
     private TrailerAdapter trailerAdapter;
@@ -96,9 +98,14 @@ public class DetailsActivity extends Activity {
     private RecyclerView.LayoutManager mLayoutManagerTrailers;
     private RecyclerView.LayoutManager mLayoutManagerReviews;
 
+    private final FavouriteExistenceChecker checker = new FavouriteExistenceChecker();
+
     private String movieTrailerAddress = "";
     private String reviewAddress = "";
 
+    private boolean alreadyFavourited = false;
+
+    @SuppressLint("DefaultLocale")
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -110,10 +117,23 @@ public class DetailsActivity extends Activity {
         TextView releaseTV = findViewById(R.id.release_tv);
         TextView ratingTV = findViewById(R.id.rating_tv);
         TextView descriptionTV = findViewById(R.id.description_tv);
-        FloatingActionButton fab = findViewById(R.id.favourite_fab);
+        final FloatingActionButton fab = findViewById(R.id.favourite_fab);
 
         trailerRecyclerView = findViewById(R.id.trailer_recycler_view);
-        trailerAdapter = new TrailerAdapter(trailerList);
+        trailerAdapter = new TrailerAdapter(trailerList, new TrailerAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(Trailer item) {
+                Intent appIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + item.getKey()))
+                        ;
+                    Intent webIntent = new Intent(Intent.ACTION_VIEW,
+                            Uri.parse("http://www.youtube.com/watch?v=" + item.getKey()));
+                    try {
+                        getBaseContext().startActivity(appIntent);
+                    } catch (ActivityNotFoundException ex) {
+                        getBaseContext().startActivity(webIntent);
+                    }
+            }
+        });
 
         reviewRecyclerView = findViewById(R.id.review_recycler_view);
         reviewAdapter = new ReviewAdapter(reviewList);
@@ -140,6 +160,18 @@ public class DetailsActivity extends Activity {
         String releaseDate = movie.releaseDate;
         String backdropPath = movie.backdropPath;
 
+        try {
+            alreadyFavourited = checker.execute(movie.id).get();
+        } catch (InterruptedException | ExecutionException e) {
+            Log.e(LOG_TAG, "onCreate: ", e);
+        }
+
+        if(alreadyFavourited){
+            fab.setImageDrawable(getResources().getDrawable(android.R.drawable.btn_star_big_on));
+        }else{
+            fab.setImageDrawable(getResources().getDrawable(android.R.drawable.btn_star_big_off));
+        }
+
         CollapsingToolbarLayout detailsLayout = findViewById(R.id.collapsingDetails);
         Picasso.with(DetailsActivity.this).load("http://image.tmdb.org/t/p/w185"+posterPath).into(posterIV);
         detailsLayout.setTitle(title);
@@ -151,15 +183,14 @@ public class DetailsActivity extends Activity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                FavouriteExistenceChecker checker = new FavouriteExistenceChecker();
                 FavouriteNewMovieHelper helper = new FavouriteNewMovieHelper();
-                boolean result = false;
                 try{
-                    if(result = checker.execute(movie.id).get()){
+                    if(alreadyFavourited){
                         Toast.makeText(getApplicationContext(), "The movie is already added to favourites!", Toast.LENGTH_LONG).show();
                     }else{
                         if(helper.execute(movie).get()>0){
                             Toast.makeText(getApplicationContext(), "The movie is now added to favourites!", Toast.LENGTH_LONG).show();
+                            fab.setImageDrawable(getResources().getDrawable(android.R.drawable.btn_star_big_on));
                         }
                     }
                 } catch (InterruptedException | ExecutionException e) {
@@ -261,6 +292,7 @@ public class DetailsActivity extends Activity {
         return new Review(object.getString("id"), object.getString("author"), object.getString("content"), object.getString("url"));
     }
 
+    @SuppressLint("StaticFieldLeak")
     private class FavouriteExistenceChecker extends AsyncTask<Integer, Void, Boolean>{
 
         @Override
@@ -274,21 +306,17 @@ public class DetailsActivity extends Activity {
             String sortOrder =
                     FavouritesContract.FavouriteEntry.COLUMN_ID + " ASC";
 
-            Cursor cursor = db.query(
-                    FavouritesContract.FavouriteEntry.TABLE_FAVOURITES,   // The table to query
-                    null,             // The array of columns to return (pass null to get all)
-                    selection,              // The columns for the WHERE clause
-                    selectionArgs,          // The values for the WHERE clause
-                    null,                   // don't group the rows
-                    null,                   // don't filter by row groups
-                    sortOrder               // The sort order
-            );
+            Cursor cursor = db.query(FavouritesContract.FavouriteEntry.TABLE_FAVOURITES,null, selection, selectionArgs,null,null, sortOrder);
 
-            if(cursor.moveToFirst()!=false){
+            if(cursor.moveToFirst()){
                 cursor.close();
+                db.close();
+                dbHelper.close();
                 return true;
             }else{
                 cursor.close();
+                db.close();
+                dbHelper.close();
                 return false;
             }
         }
@@ -299,6 +327,7 @@ public class DetailsActivity extends Activity {
         }
     }
 
+    @SuppressLint("StaticFieldLeak")
     private class FavouriteNewMovieHelper extends AsyncTask<Movie, Void, Long>{
 
         @Override
@@ -320,9 +349,12 @@ public class DetailsActivity extends Activity {
             values.put(FavouritesContract.FavouriteEntry.COLUMN_OVERVIEW, movie.overview);
             values.put(FavouritesContract.FavouriteEntry.COLUMN_RELEASE_DATE, movie.releaseDate);
             long newRowId = db.insert(FavouritesContract.FavouriteEntry.TABLE_FAVOURITES, null, values);
+            db.close();
+            dbHelper.close();
             return newRowId;
         }
 
+        @Override
         protected void onPostExecute(Long result){
             super.onPostExecute(result);
         }

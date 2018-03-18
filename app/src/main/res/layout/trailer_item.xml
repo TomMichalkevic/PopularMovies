@@ -44,12 +44,12 @@
     android:padding="10dp">
 
     <ImageButton
-        android:id="@+id/imageButton"
+        android:id="@+id/imageButtonTrailer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
-        android:contentDescription="play"
+        android:contentDescription="@string/play_trailer"
         android:src="@android:drawable/ic_media_play" />
 
     <TextView
@@ -64,7 +64,7 @@
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintLeft_toRightOf="@+id/imageButton"
+        app:layout_constraintLeft_toRightOf="@+id/imageButtonTrailer"
         app:layout_constraintTop_toTopOf="parent" />
 
 

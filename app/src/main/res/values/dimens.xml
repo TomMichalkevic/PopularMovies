@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <dimen name="titleTextSize">50sp</dimen>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <dimen name="titleTextSize" tools:ignore="UnusedResources">50sp</dimen>
 
     <dimen name="movieDescPadding">10dp</dimen>
-    <dimen name="movieTitlePadding">20dp</dimen>
+    <dimen name="movieTitlePadding" tools:ignore="UnusedResources">20dp</dimen>
 
     <dimen name="posterInDetailsHeight">200dp</dimen>
     <dimen name="posterInDetailsWidth">180dp</dimen>
     <dimen name="posterPadding">15dp</dimen>
-    <dimen name="postetMinHeight">300dp</dimen>
-    <dimen name="postetMinWidth">200dp</dimen>
+    <dimen name="postetMinHeight" tools:ignore="UnusedResources">300dp</dimen>
+    <dimen name="postetMinWidth" tools:ignore="UnusedResources">200dp</dimen>
 
     <dimen name="descWidth">0dp</dimen>
 
-    <dimen name="favouriteButtonPadding">10dp</dimen>
-    <dimen name="favouriteButtonMargin">10dp</dimen>
+    <dimen name="favouriteButtonPadding" tools:ignore="UnusedResources">10dp</dimen>
+    <dimen name="favouriteButtonMargin" tools:ignore="UnusedResources">10dp</dimen>
 
-    <dimen name="ratingTVMarginStart">20dp</dimen>
+    <dimen name="ratingTVMarginStart" tools:ignore="UnusedResources">20dp</dimen>
 
-    <dimen name="releaseTVMarginSize">20dp</dimen>
+    <dimen name="releaseTVMarginSize" tools:ignore="UnusedResources">20dp</dimen>
     <dimen name="releaseTextSize">30sp</dimen>
 </resources>

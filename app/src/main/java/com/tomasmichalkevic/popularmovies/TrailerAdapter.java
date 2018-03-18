@@ -38,10 +38,13 @@
 
 package com.tomasmichalkevic.popularmovies;
 
+import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import java.util.List;
@@ -52,23 +55,30 @@ import java.util.List;
 
 public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.ViewHolder> {
 
-    private List<Trailer> trailerList;
+    private final List<Trailer> trailerList;
+    private Context context;
+    private final OnItemClickListener listener;
 
-    public TrailerAdapter(List<Trailer> trailerList) {
+    public TrailerAdapter(List<Trailer> trailerList, OnItemClickListener listener) {
         this.trailerList = trailerList;
+        this.listener = listener;
     }
 
+    public interface OnItemClickListener {
+        void onItemClick(Trailer item);
+    }
+
+    @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.trailer_item, parent, false);
+        context = parent.getContext();
         return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
-        Trailer trailer = trailerList.get(position);
-        holder.title.setText(trailer.getName());
-
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        holder.bind(trailerList.get(position), listener);
     }
 
     @Override
@@ -77,12 +87,27 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.ViewHold
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        public TextView title;
+        public final TextView title;
+        private final ImageButton playButton;
+
 
         public ViewHolder(View view) {
             super(view);
             title = view.findViewById(R.id.trailer_title);
+            playButton = view.findViewById(R.id.imageButtonTrailer);
         }
+
+        public void bind(final Trailer trailer, final OnItemClickListener listener){
+            title.setText(trailer.getName());
+            playButton.setOnClickListener(new View.OnClickListener(){
+
+                @Override
+                public void onClick(View v) {
+                    listener.onItemClick(trailer);
+                }
+            });
+        }
+
     }
 
 }

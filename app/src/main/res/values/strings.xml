@@ -4,5 +4,9 @@
     <string name="title_activity_settings">Settings</string>
 
     <string name="imageview_description">Movie Poster</string>
-    <string name="favourite_button_text">Add a Favourite</string>
+
+    <string name="trailer_section_title">Trailers:</string>
+    <string name="review_section_title">Reviews:</string>
+    <string name="play_trailer">play</string>
+    <string name="backdrop_image">backdrop image</string>
 </resources>

@@ -41,7 +41,8 @@ repositories {
     google()
 }
 
-def getApiKey(){
+static def getApiKey(){
+    //noinspection GrUnnecessaryDefModifier
     def Properties props = new Properties()
     props.load(new FileInputStream(new File('secrets.properties')))
     return props['MOVIE_DB_API_KEY']
