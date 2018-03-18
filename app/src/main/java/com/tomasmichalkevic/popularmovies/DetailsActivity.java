@@ -39,7 +39,12 @@
 package com.tomasmichalkevic.popularmovies;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.CollapsingToolbarLayout;
@@ -54,6 +59,8 @@ import android.widget.Toast;
 
 import com.facebook.stetho.Stetho;
 import com.squareup.picasso.Picasso;
+import com.tomasmichalkevic.popularmovies.data.FavouritesContract;
+import com.tomasmichalkevic.popularmovies.data.FavouritesDBHelper;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -125,7 +132,7 @@ public class DetailsActivity extends Activity {
             finish();
         }
 
-        Movie movie = intent.getParcelableExtra("Movie");
+        final Movie movie = intent.getParcelableExtra("Movie");
         double voteAverage = movie.voteAverage;
         String title = movie.title;
         String posterPath = movie.posterPath;
@@ -144,7 +151,20 @@ public class DetailsActivity extends Activity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getApplicationContext(), "Button Clicked - To be implemented", Toast.LENGTH_LONG).show();
+                FavouriteExistenceChecker checker = new FavouriteExistenceChecker();
+                FavouriteNewMovieHelper helper = new FavouriteNewMovieHelper();
+                boolean result = false;
+                try{
+                    if(result = checker.execute(movie.id).get()){
+                        Toast.makeText(getApplicationContext(), "The movie is already added to favourites!", Toast.LENGTH_LONG).show();
+                    }else{
+                        if(helper.execute(movie).get()>0){
+                            Toast.makeText(getApplicationContext(), "The movie is now added to favourites!", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                } catch (InterruptedException | ExecutionException e) {
+                    Log.e(LOG_TAG, "onClick: ", e);
+                }
             }
         });
 
@@ -239,5 +259,72 @@ public class DetailsActivity extends Activity {
 
     private Review getReview(JSONObject object) throws JSONException {
         return new Review(object.getString("id"), object.getString("author"), object.getString("content"), object.getString("url"));
+    }
+
+    private class FavouriteExistenceChecker extends AsyncTask<Integer, Void, Boolean>{
+
+        @Override
+        protected Boolean doInBackground(Integer... integers) {
+            FavouritesDBHelper dbHelper = new FavouritesDBHelper(getBaseContext());
+            SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+            String selection = FavouritesContract.FavouriteEntry.COLUMN_ID + " = ?";
+            String[] selectionArgs = { Integer.toString(integers[0]) };
+
+            String sortOrder =
+                    FavouritesContract.FavouriteEntry.COLUMN_ID + " ASC";
+
+            Cursor cursor = db.query(
+                    FavouritesContract.FavouriteEntry.TABLE_FAVOURITES,   // The table to query
+                    null,             // The array of columns to return (pass null to get all)
+                    selection,              // The columns for the WHERE clause
+                    selectionArgs,          // The values for the WHERE clause
+                    null,                   // don't group the rows
+                    null,                   // don't filter by row groups
+                    sortOrder               // The sort order
+            );
+
+            if(cursor.moveToFirst()!=false){
+                cursor.close();
+                return true;
+            }else{
+                cursor.close();
+                return false;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result){
+            super.onPostExecute(result);
+        }
+    }
+
+    private class FavouriteNewMovieHelper extends AsyncTask<Movie, Void, Long>{
+
+        @Override
+        protected Long doInBackground(Movie... movies) {
+            Movie movie = movies[0];
+            FavouritesDBHelper dbHelper = new FavouritesDBHelper(getBaseContext());
+            SQLiteDatabase db = dbHelper.getWritableDatabase();
+            ContentValues values = new ContentValues();
+            values.put(FavouritesContract.FavouriteEntry.COLUMN_ID, movie.id);
+            values.put(FavouritesContract.FavouriteEntry.COLUMN_VIDEO, movie.video);
+            values.put(FavouritesContract.FavouriteEntry.COLUMN_VOTE_AVERAGE, movie.voteAverage);
+            values.put(FavouritesContract.FavouriteEntry.COLUMN_TITLE, movie.title);
+            values.put(FavouritesContract.FavouriteEntry.COLUMN_POPULARITY, movie.popularity);
+            values.put(FavouritesContract.FavouriteEntry.COLUMN_POSTER_PATH, movie.posterPath);
+            values.put(FavouritesContract.FavouriteEntry.COLUMN_ORIGINAL_LANG, movie.originalLang);
+            values.put(FavouritesContract.FavouriteEntry.COLUMN_ORIGINAL_TITLE, movie.originalTitle);
+            values.put(FavouritesContract.FavouriteEntry.COLUMN_BACKDROP_PATH, movie.backdropPath);
+            values.put(FavouritesContract.FavouriteEntry.COLUMN_ADULT_MOVIE, movie.adultMovie);
+            values.put(FavouritesContract.FavouriteEntry.COLUMN_OVERVIEW, movie.overview);
+            values.put(FavouritesContract.FavouriteEntry.COLUMN_RELEASE_DATE, movie.releaseDate);
+            long newRowId = db.insert(FavouritesContract.FavouriteEntry.TABLE_FAVOURITES, null, values);
+            return newRowId;
+        }
+
+        protected void onPostExecute(Long result){
+            super.onPostExecute(result);
+        }
     }
 }
