@@ -51,29 +51,28 @@ public class FavouritesDBHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "favourites.db";
     private static final int DATABASE_VERSION = 1;
 
+    final String SQL_CREATE_MOVIE_TABLE = "CREATE TABLE " +
+            FavouritesContract.FavouriteEntry.TABLE_FAVOURITES + "(" + FavouritesContract.FavouriteEntry._ID +
+            " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            FavouritesContract.FavouriteEntry.COLUMN_ID + " INTEGER NOT NULL, " +
+            FavouritesContract.FavouriteEntry.COLUMN_VIDEO + " NUMERIC NOT NULL, " +
+            FavouritesContract.FavouriteEntry.COLUMN_VOTE_AVERAGE + " REAL NOT NULL, " +
+            FavouritesContract.FavouriteEntry.COLUMN_TITLE + " TEXT NOT NULL, " +
+            FavouritesContract.FavouriteEntry.COLUMN_POPULARITY + " REAL NOT NULL, " +
+            FavouritesContract.FavouriteEntry.COLUMN_POSTER_PATH + " TEXT NOT NULL, " +
+            FavouritesContract.FavouriteEntry.COLUMN_ORIGINAL_LANG + " TEXT NOT NULL, " +
+            FavouritesContract.FavouriteEntry.COLUMN_ORIGINAL_TITLE + " TEXT NOT NULL, " +
+            FavouritesContract.FavouriteEntry.COLUMN_BACKDROP_PATH + " TEXT NOT NULL, " +
+            FavouritesContract.FavouriteEntry.COLUMN_ADULT_MOVIE + " NUMERIC NOT NULL, " +
+            FavouritesContract.FavouriteEntry.COLUMN_OVERVIEW + " TEXT NOT NULL, " +
+            FavouritesContract.FavouriteEntry.COLUMN_RELEASE_DATE + " TEXT NOT NULL);";
+
     public FavouritesDBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-
-        final String SQL_CREATE_MOVIE_TABLE = "CREATE TABLE " +
-                FavouritesContract.FavouriteEntry.TABLE_FAVOURITES + "(" + FavouritesContract.FavouriteEntry._ID +
-                " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                FavouritesContract.FavouriteEntry.COLUMN_ID + " INTEGER NOT NULL, " +
-                FavouritesContract.FavouriteEntry.COLUMN_VIDEO + " NUMERIC NOT NULL, " +
-                FavouritesContract.FavouriteEntry.COLUMN_VOTE_AVERAGE + " REAL NOT NULL, " +
-                FavouritesContract.FavouriteEntry.COLUMN_TITLE + " TEXT NOT NULL, " +
-                FavouritesContract.FavouriteEntry.COLUMN_POPULARITY + " REAL NOT NULL, " +
-                FavouritesContract.FavouriteEntry.COLUMN_POSTER_PATH + " TEXT NOT NULL, " +
-                FavouritesContract.FavouriteEntry.COLUMN_ORIGINAL_LANG + " TEXT NOT NULL, " +
-                FavouritesContract.FavouriteEntry.COLUMN_ORIGINAL_TITLE + " TEXT NOT NULL, " +
-                FavouritesContract.FavouriteEntry.COLUMN_BACKDROP_PATH + " TEXT NOT NULL, " +
-                FavouritesContract.FavouriteEntry.COLUMN_ADULT_MOVIE + " NUMERIC NOT NULL, " +
-                FavouritesContract.FavouriteEntry.COLUMN_OVERVIEW + " TEXT NOT NULL, " +
-                FavouritesContract.FavouriteEntry.COLUMN_RELEASE_DATE + " TEXT NOT NULL);";
-
         db.execSQL(SQL_CREATE_MOVIE_TABLE);
 
     }

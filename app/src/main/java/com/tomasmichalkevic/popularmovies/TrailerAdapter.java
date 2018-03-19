@@ -49,6 +49,9 @@ import android.widget.TextView;
 
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 /**
  * Created by tomasmichalkevic on 01/03/2018.
  */
@@ -87,14 +90,14 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.ViewHold
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        public final TextView title;
-        private final ImageButton playButton;
+
+        @BindView(R.id.trailer_title) TextView title;
+        @BindView(R.id.imageButtonTrailer) ImageButton playButton;
 
 
         public ViewHolder(View view) {
             super(view);
-            title = view.findViewById(R.id.trailer_title);
-            playButton = view.findViewById(R.id.imageButtonTrailer);
+            ButterKnife.bind(this, view);
         }
 
         public void bind(final Trailer trailer, final OnItemClickListener listener){

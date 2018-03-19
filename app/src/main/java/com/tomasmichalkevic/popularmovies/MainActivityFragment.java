@@ -68,6 +68,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 import static com.tomasmichalkevic.popularmovies.data.FavouritesContract.FavouriteEntry.COLUMN_ADULT_MOVIE;
 import static com.tomasmichalkevic.popularmovies.data.FavouritesContract.FavouriteEntry.COLUMN_BACKDROP_PATH;
 import static com.tomasmichalkevic.popularmovies.data.FavouritesContract.FavouriteEntry.COLUMN_ID;
@@ -100,9 +103,9 @@ public class MainActivityFragment extends Fragment {
 
     private final ArrayList<Movie> moviesList = new ArrayList<>();
 
-    private GridView gridView;
-
     private SharedPreferences preferences;
+
+    @BindView(R.id.movies_grid) GridView gridView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -131,7 +134,7 @@ public class MainActivityFragment extends Fragment {
         Collections.addAll(moviesList, movies);
 
         movieAdapter = new MovieAdapter(getActivity(), moviesList);
-        gridView = rootView.findViewById(R.id.movies_grid);
+        ButterKnife.bind(this, rootView);
         gridView.setAdapter(movieAdapter);
         return rootView;
     }
@@ -198,13 +201,48 @@ public class MainActivityFragment extends Fragment {
     }
 
     private Movie[] getFavouriteMovies(){
-        FavouriteMoviesHandler favHandler = new FavouriteMoviesHandler();
-        try {
-            return favHandler.execute().get();
-        } catch (InterruptedException | ExecutionException e) {
-            Log.e(LOG_TAG, "getFavouriteMovies: ", e);
+        Movie[] movies = new Movie[0];
+
+        String sortOrder =
+                COLUMN_ID + " ASC";
+
+        Cursor cursor = getActivity().getContentResolver().query(FavouritesContract.FavouriteEntry.CONTENT_URI,null, null, null, sortOrder);
+
+        if(cursor.moveToFirst()){
+            movies = new Movie[cursor.getCount()];
+            movies[0] = new Movie(1,
+                    cursor.getInt(cursor.getColumnIndex(COLUMN_ID)),
+                    cursor.getInt(cursor.getColumnIndex(COLUMN_VIDEO))==1,
+                    cursor.getDouble(cursor.getColumnIndex(COLUMN_VOTE_AVERAGE)),
+                    cursor.getString(cursor.getColumnIndex(COLUMN_TITLE)),
+                    cursor.getDouble(cursor.getColumnIndex(COLUMN_POPULARITY)),
+                    cursor.getString(cursor.getColumnIndex(COLUMN_POSTER_PATH)),
+                    cursor.getString(cursor.getColumnIndex(COLUMN_ORIGINAL_LANG)),
+                    cursor.getString(cursor.getColumnIndex(COLUMN_ORIGINAL_TITLE)),
+                    new int[0], cursor.getString(cursor.getColumnIndex(COLUMN_BACKDROP_PATH)),
+                    cursor.getInt(cursor.getColumnIndex(COLUMN_ADULT_MOVIE))==1,
+                    cursor.getString(cursor.getColumnIndex(COLUMN_OVERVIEW)),
+                    cursor.getString(cursor.getColumnIndex(COLUMN_RELEASE_DATE)));
+            int i = 1;
+            while(cursor.moveToNext()){
+                movies[i] = new Movie(1,
+                        cursor.getInt(cursor.getColumnIndex(COLUMN_ID)),
+                        cursor.getInt(cursor.getColumnIndex(COLUMN_VIDEO))==1,
+                        cursor.getDouble(cursor.getColumnIndex(COLUMN_VOTE_AVERAGE)),
+                        cursor.getString(cursor.getColumnIndex(COLUMN_TITLE)),
+                        cursor.getDouble(cursor.getColumnIndex(COLUMN_POPULARITY)),
+                        cursor.getString(cursor.getColumnIndex(COLUMN_POSTER_PATH)),
+                        cursor.getString(cursor.getColumnIndex(COLUMN_ORIGINAL_LANG)),
+                        cursor.getString(cursor.getColumnIndex(COLUMN_ORIGINAL_TITLE)),
+                        new int[0], cursor.getString(cursor.getColumnIndex(COLUMN_BACKDROP_PATH)),
+                        cursor.getInt(cursor.getColumnIndex(COLUMN_ADULT_MOVIE))==1,
+                        cursor.getString(cursor.getColumnIndex(COLUMN_OVERVIEW)),
+                        cursor.getString(cursor.getColumnIndex(COLUMN_RELEASE_DATE)));
+                i++;
+            }
         }
-        return new Movie[0];
+        cursor.close();
+        return movies;
     }
 
     private Movie[] getMovies(){
@@ -234,68 +272,6 @@ public class MainActivityFragment extends Fragment {
                 object.getDouble("vote_average"), object.getString("title"), object.getDouble("popularity"), object.getString("poster_path"),
                 object.getString("original_language"), object.getString("original_title"), genreIDsList, object.getString("backdrop_path"),
                 object.getBoolean("adult"), object.getString("overview"), object.getString("release_date"));
-    }
-
-    @SuppressLint("StaticFieldLeak")
-    private class FavouriteMoviesHandler extends AsyncTask<Void, Void, Movie[]>{
-
-
-        @Override
-        protected Movie[] doInBackground(Void... voids) {
-            FavouritesDBHelper dbHelper = new FavouritesDBHelper(getContext());
-            SQLiteDatabase db = dbHelper.getReadableDatabase();
-            Movie[] movies = new Movie[0];
-
-            String sortOrder =
-                    COLUMN_ID + " ASC";
-
-            Cursor cursor = db.query(FavouritesContract.FavouriteEntry.TABLE_FAVOURITES,null, null, null,null,null, sortOrder);
-
-            if(cursor.moveToFirst()){
-                movies = new Movie[cursor.getCount()];
-                movies[0] = new Movie(1,
-                        cursor.getInt(cursor.getColumnIndex(COLUMN_ID)),
-                        cursor.getInt(cursor.getColumnIndex(COLUMN_VIDEO))==1,
-                        cursor.getDouble(cursor.getColumnIndex(COLUMN_VOTE_AVERAGE)),
-                        cursor.getString(cursor.getColumnIndex(COLUMN_TITLE)),
-                        cursor.getDouble(cursor.getColumnIndex(COLUMN_POPULARITY)),
-                        cursor.getString(cursor.getColumnIndex(COLUMN_POSTER_PATH)),
-                        cursor.getString(cursor.getColumnIndex(COLUMN_ORIGINAL_LANG)),
-                        cursor.getString(cursor.getColumnIndex(COLUMN_ORIGINAL_TITLE)),
-                        new int[0], cursor.getString(cursor.getColumnIndex(COLUMN_BACKDROP_PATH)),
-                        cursor.getInt(cursor.getColumnIndex(COLUMN_ADULT_MOVIE))==1,
-                        cursor.getString(cursor.getColumnIndex(COLUMN_OVERVIEW)),
-                        cursor.getString(cursor.getColumnIndex(COLUMN_RELEASE_DATE)));
-                int i = 1;
-                while(cursor.moveToNext()){
-                    movies[i] = new Movie(1,
-                             cursor.getInt(cursor.getColumnIndex(COLUMN_ID)),
-                                cursor.getInt(cursor.getColumnIndex(COLUMN_VIDEO))==1,
-                                cursor.getDouble(cursor.getColumnIndex(COLUMN_VOTE_AVERAGE)),
-                                        cursor.getString(cursor.getColumnIndex(COLUMN_TITLE)),
-                                        cursor.getDouble(cursor.getColumnIndex(COLUMN_POPULARITY)),
-                                        cursor.getString(cursor.getColumnIndex(COLUMN_POSTER_PATH)),
-                                        cursor.getString(cursor.getColumnIndex(COLUMN_ORIGINAL_LANG)),
-                                        cursor.getString(cursor.getColumnIndex(COLUMN_ORIGINAL_TITLE)),
-                                        new int[0], cursor.getString(cursor.getColumnIndex(COLUMN_BACKDROP_PATH)),
-                                        cursor.getInt(cursor.getColumnIndex(COLUMN_ADULT_MOVIE))==1,
-                                        cursor.getString(cursor.getColumnIndex(COLUMN_OVERVIEW)),
-                                        cursor.getString(cursor.getColumnIndex(COLUMN_RELEASE_DATE)));
-                    i++;
-                }
-            }
-
-            cursor.close();
-            db.close();
-            dbHelper.close();
-            return movies;
-
-        }
-
-        @Override
-        protected void onPostExecute(Movie[] result){
-            super.onPostExecute(result);
-        }
     }
 
 }

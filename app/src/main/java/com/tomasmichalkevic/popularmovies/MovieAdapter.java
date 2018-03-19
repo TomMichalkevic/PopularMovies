@@ -51,11 +51,17 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
+import butterknife.BindDimen;
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 /**
  * Created by tomasmichalkevic on 19/02/2018.
  */
 
 class MovieAdapter extends ArrayAdapter<Movie> {
+
+    @BindView(R.id.movie_image) ImageView iconView;
 
     public MovieAdapter(Activity context, List<Movie> movies) {
         super(context, 0, movies);
@@ -72,7 +78,7 @@ class MovieAdapter extends ArrayAdapter<Movie> {
                     R.layout.movie_item, parent, false);
         }
 
-        ImageView iconView = convertView.findViewById(R.id.movie_image);
+        ButterKnife.bind(this, convertView);
         Picasso.with(getContext()).load("http://image.tmdb.org/t/p/w185"+movie.posterPath).into(iconView);
         iconView.setOnClickListener(new View.OnClickListener(){
 

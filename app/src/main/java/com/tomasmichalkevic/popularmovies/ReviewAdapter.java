@@ -47,6 +47,9 @@ import android.widget.TextView;
 
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 /**
  * Created by tomasmichalkevic on 12/03/2018.
  */
@@ -80,15 +83,14 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        public final TextView author;
-        public final TextView content;
-        public final TextView url;
+
+        @BindView(R.id.author) TextView author;
+        @BindView(R.id.review_content) TextView content;
+        @BindView(R.id.review_url) TextView url;
 
         public ViewHolder(View view) {
             super(view);
-            author = view.findViewById(R.id.author);
-            content = view.findViewById(R.id.review_content);
-            url = view.findViewById(R.id.review_url);
+            ButterKnife.bind(this, view);
         }
     }
 }

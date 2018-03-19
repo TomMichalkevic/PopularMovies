@@ -62,7 +62,6 @@ import android.widget.Toast;
 import com.facebook.stetho.Stetho;
 import com.squareup.picasso.Picasso;
 import com.tomasmichalkevic.popularmovies.data.FavouritesContract;
-import com.tomasmichalkevic.popularmovies.data.FavouritesDBHelper;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -72,6 +71,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 /**
  * Created by tomasmichalkevic on 21/02/2018.
@@ -89,21 +91,26 @@ public class DetailsActivity extends Activity {
     private final List<Trailer> trailerList = new ArrayList<>();
     private final List<Review> reviewList = new ArrayList<>();
 
-    private RecyclerView trailerRecyclerView;
     private TrailerAdapter trailerAdapter;
-
-    private RecyclerView reviewRecyclerView;
     private ReviewAdapter reviewAdapter;
 
     private RecyclerView.LayoutManager mLayoutManagerTrailers;
     private RecyclerView.LayoutManager mLayoutManagerReviews;
 
-    private final FavouriteExistenceChecker checker = new FavouriteExistenceChecker();
-
     private String movieTrailerAddress = "";
     private String reviewAddress = "";
 
     private boolean alreadyFavourited = false;
+
+    @BindView(R.id.title_iv) ImageView titleBackdrop;
+    @BindView(R.id.poster_iv) ImageView posterIV;
+    @BindView(R.id.release_tv) TextView releaseTV;
+    @BindView(R.id.rating_tv) TextView ratingTV;
+    @BindView(R.id.description_tv) TextView descriptionTV;
+    @BindView(R.id.favourite_fab) FloatingActionButton fab;
+    @BindView(R.id.trailer_recycler_view) RecyclerView trailerRecyclerView;
+    @BindView(R.id.review_recycler_view) RecyclerView reviewRecyclerView;
+    @BindView(R.id.collapsingDetails) CollapsingToolbarLayout detailsLayout;
 
     @SuppressLint("DefaultLocale")
     @Override
@@ -111,15 +118,8 @@ public class DetailsActivity extends Activity {
         super.onCreate(savedInstanceState);
         Stetho.initializeWithDefaults(this);
         setContentView(R.layout.activity_detail);
+        ButterKnife.bind(this);
 
-        ImageView titleBackdrop = findViewById(R.id.title_iv);
-        ImageView posterIV = findViewById(R.id.poster_iv);
-        TextView releaseTV = findViewById(R.id.release_tv);
-        TextView ratingTV = findViewById(R.id.rating_tv);
-        TextView descriptionTV = findViewById(R.id.description_tv);
-        final FloatingActionButton fab = findViewById(R.id.favourite_fab);
-
-        trailerRecyclerView = findViewById(R.id.trailer_recycler_view);
         trailerAdapter = new TrailerAdapter(trailerList, new TrailerAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Trailer item) {
@@ -135,7 +135,6 @@ public class DetailsActivity extends Activity {
             }
         });
 
-        reviewRecyclerView = findViewById(R.id.review_recycler_view);
         reviewAdapter = new ReviewAdapter(reviewList);
 
         trailerRecyclerView.setHasFixedSize(true);
@@ -160,19 +159,13 @@ public class DetailsActivity extends Activity {
         String releaseDate = movie.releaseDate;
         String backdropPath = movie.backdropPath;
 
-        try {
-            alreadyFavourited = checker.execute(movie.id).get();
-        } catch (InterruptedException | ExecutionException e) {
-            Log.e(LOG_TAG, "onCreate: ", e);
-        }
+        alreadyFavourited = isFavouritedAlready(movie);
 
         if(alreadyFavourited){
             fab.setImageDrawable(getResources().getDrawable(android.R.drawable.btn_star_big_on));
         }else{
             fab.setImageDrawable(getResources().getDrawable(android.R.drawable.btn_star_big_off));
         }
-
-        CollapsingToolbarLayout detailsLayout = findViewById(R.id.collapsingDetails);
         Picasso.with(DetailsActivity.this).load("http://image.tmdb.org/t/p/w185"+posterPath).into(posterIV);
         detailsLayout.setTitle(title);
         Picasso.with(DetailsActivity.this).load("http://image.tmdb.org/t/p/w500"+backdropPath).into(titleBackdrop);
@@ -183,19 +176,15 @@ public class DetailsActivity extends Activity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                FavouriteNewMovieHelper helper = new FavouriteNewMovieHelper();
-                try{
-                    if(alreadyFavourited){
-                        Toast.makeText(getApplicationContext(), "The movie is already added to favourites!", Toast.LENGTH_LONG).show();
-                    }else{
-                        if(helper.execute(movie).get()>0){
-                            Toast.makeText(getApplicationContext(), "The movie is now added to favourites!", Toast.LENGTH_LONG).show();
-                            fab.setImageDrawable(getResources().getDrawable(android.R.drawable.btn_star_big_on));
-                        }
+                if(alreadyFavourited){
+                    Toast.makeText(getApplicationContext(), "The movie is already added to favourites!", Toast.LENGTH_LONG).show();
+                }else{
+                    if(insertData(movie)){
+                        Toast.makeText(getApplicationContext(), "The movie is now added to favourites!", Toast.LENGTH_LONG).show();
+                        fab.setImageDrawable(getResources().getDrawable(android.R.drawable.btn_star_big_on));
                     }
-                } catch (InterruptedException | ExecutionException e) {
-                    Log.e(LOG_TAG, "onClick: ", e);
                 }
+
             }
         });
 
@@ -292,49 +281,17 @@ public class DetailsActivity extends Activity {
         return new Review(object.getString("id"), object.getString("author"), object.getString("content"), object.getString("url"));
     }
 
-    @SuppressLint("StaticFieldLeak")
-    private class FavouriteExistenceChecker extends AsyncTask<Integer, Void, Boolean>{
-
-        @Override
-        protected Boolean doInBackground(Integer... integers) {
-            FavouritesDBHelper dbHelper = new FavouritesDBHelper(getBaseContext());
-            SQLiteDatabase db = dbHelper.getReadableDatabase();
-
-            String selection = FavouritesContract.FavouriteEntry.COLUMN_ID + " = ?";
-            String[] selectionArgs = { Integer.toString(integers[0]) };
-
-            String sortOrder =
-                    FavouritesContract.FavouriteEntry.COLUMN_ID + " ASC";
-
-            Cursor cursor = db.query(FavouritesContract.FavouriteEntry.TABLE_FAVOURITES,null, selection, selectionArgs,null,null, sortOrder);
-
-            if(cursor.moveToFirst()){
-                cursor.close();
-                db.close();
-                dbHelper.close();
-                return true;
-            }else{
-                cursor.close();
-                db.close();
-                dbHelper.close();
-                return false;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Boolean result){
-            super.onPostExecute(result);
-        }
+    public boolean isFavouritedAlready(Movie movie){
+        String[] selectionArgs = { Integer.toString(movie.id) };
+        String sortOrder = FavouritesContract.FavouriteEntry.COLUMN_ID + " ASC";
+        String selection = FavouritesContract.FavouriteEntry.COLUMN_ID + " = ?";
+        Cursor cursor = getContentResolver().query(FavouritesContract.FavouriteEntry.CONTENT_URI, null, selection, selectionArgs, sortOrder);
+        Log.i(LOG_TAG, "isFavouritedAlready: " + cursor.getCount());
+        return !(cursor.getCount()==0);
     }
 
-    @SuppressLint("StaticFieldLeak")
-    private class FavouriteNewMovieHelper extends AsyncTask<Movie, Void, Long>{
-
-        @Override
-        protected Long doInBackground(Movie... movies) {
-            Movie movie = movies[0];
-            FavouritesDBHelper dbHelper = new FavouritesDBHelper(getBaseContext());
-            SQLiteDatabase db = dbHelper.getWritableDatabase();
+    private boolean insertData(Movie movie){
+        if(!isFavouritedAlready(movie)){
             ContentValues values = new ContentValues();
             values.put(FavouritesContract.FavouriteEntry.COLUMN_ID, movie.id);
             values.put(FavouritesContract.FavouriteEntry.COLUMN_VIDEO, movie.video);
@@ -348,15 +305,13 @@ public class DetailsActivity extends Activity {
             values.put(FavouritesContract.FavouriteEntry.COLUMN_ADULT_MOVIE, movie.adultMovie);
             values.put(FavouritesContract.FavouriteEntry.COLUMN_OVERVIEW, movie.overview);
             values.put(FavouritesContract.FavouriteEntry.COLUMN_RELEASE_DATE, movie.releaseDate);
-            long newRowId = db.insert(FavouritesContract.FavouriteEntry.TABLE_FAVOURITES, null, values);
-            db.close();
-            dbHelper.close();
-            return newRowId;
+
+            getContentResolver().insert(FavouritesContract.FavouriteEntry.CONTENT_URI, values);
+            return true;
+        }else{
+            return false;
         }
 
-        @Override
-        protected void onPostExecute(Long result){
-            super.onPostExecute(result);
-        }
+
     }
 }
