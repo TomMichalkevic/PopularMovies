@@ -42,26 +42,25 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    android:theme="@style/Theme.Design">
+    android:theme="@style/Theme.Design"
+    android:id="@+id/detailsCoordinatorLayout">
 
     <android.support.design.widget.AppBarLayout
         android:id="@+id/detailsAppBar"
         android:layout_width="match_parent"
         android:layout_height="300dp"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        android:fitsSystemWindows="true">
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
         <android.support.design.widget.CollapsingToolbarLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/collapsingDetails"
-            android:fitsSystemWindows="true"
             app:contentScrim="?attr/colorPrimary"
-            app:expandedTitleMarginStart="18dp"
-            app:expandedTitleMarginEnd="50dp"
+            app:expandedTitleMarginStart="@dimen/titleMarginStartToolbar"
+            app:expandedTitleMarginEnd="@dimen/titleMarginEndToolbar"
             app:title="@string/app_name"
-            app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
+            app:titleEnabled="true"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed"
             app:expandedTitleTextAppearance="@style/TextAppearance.AppCompat.Title"
             app:expandedTitleGravity="bottom|left">
 
@@ -86,11 +85,13 @@
     <android.support.v4.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:id="@+id/detailsNestedScrollView">
 
         <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:id="@+id/detailsConstraintLayout">
 
             <ImageView
                 android:id="@+id/poster_iv"
@@ -124,7 +125,7 @@
                 android:textColor="@android:color/black"
                 app:layout_constraintTop_toBottomOf="@+id/poster_iv"
                 tools:ignore="MissingConstraints"
-                tools:layout_editor_absoluteX="0dp" />
+                tools:layout_editor_absoluteX="@dimen/descriptionTVAbsoluteX" />
 
             <View
                 android:id="@+id/dividerView"
@@ -142,7 +143,7 @@
                 android:padding="@dimen/movieDescPadding"
                 android:text="@string/trailer_section_title"
                 android:textColor="@android:color/black"
-                android:textSize="20sp"
+                android:textSize="@dimen/trailerSectionTextSize"
                 app:layout_constraintTop_toBottomOf="@+id/dividerView" />
 
             <android.support.v7.widget.RecyclerView
@@ -155,9 +156,9 @@
             <View
                 android:id="@+id/dividerView2"
                 android:layout_width="fill_parent"
-                android:layout_height="1dp"
+                android:layout_height="@dimen/dividerHeight"
                 android:background="@android:color/background_dark"
-                android:padding="10dp"
+                android:padding="@dimen/dividerPadding"
                 app:layout_constraintTop_toBottomOf="@+id/trailer_recycler_view" />
 
             <TextView
@@ -167,7 +168,7 @@
                 android:padding="@dimen/movieDescPadding"
                 android:text="@string/review_section_title"
                 android:textColor="@android:color/black"
-                android:textSize="20sp"
+                android:textSize="@dimen/reviewSectionTVTextSize"
                 app:layout_constraintTop_toBottomOf="@+id/dividerView2" />
 
             <android.support.v7.widget.RecyclerView
@@ -187,7 +188,7 @@
         android:id="@+id/favourite_fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="10dp"
+        android:layout_marginEnd="@dimen/FAMarginEnd"
         app:layout_anchor="@id/detailsAppBar"
         app:layout_anchorGravity="bottom|end"
         android:src="@android:drawable/btn_star"/>

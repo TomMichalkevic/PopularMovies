@@ -38,17 +38,15 @@
 
 package com.tomasmichalkevic.popularmovies;
 
-import android.annotation.SuppressLint;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -57,7 +55,6 @@ import android.widget.GridView;
 import android.widget.Toast;
 
 import com.tomasmichalkevic.popularmovies.data.FavouritesContract;
-import com.tomasmichalkevic.popularmovies.data.FavouritesDBHelper;
 import com.tomasmichalkevic.popularmovies.utils.JsonUtils;
 
 import org.json.JSONArray;
@@ -105,6 +102,8 @@ public class MainActivityFragment extends Fragment {
 
     private SharedPreferences preferences;
 
+    private int listPosition = 0;
+
     @BindView(R.id.movies_grid) GridView gridView;
 
     @Override
@@ -140,6 +139,23 @@ public class MainActivityFragment extends Fragment {
     }
 
     @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        if(savedInstanceState != null){
+            listPosition = savedInstanceState.getInt("position");
+            gridView.smoothScrollToPosition(listPosition);
+        }
+
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        listPosition = gridView.getFirstVisiblePosition();
+        outState.putInt("position", listPosition);
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
         if(!movieAdapter.isEmpty()){
@@ -150,7 +166,6 @@ public class MainActivityFragment extends Fragment {
             }
 
         }
-        Log.i(LOG_TAG, "OnResume");
     }
 
     public static boolean isNetworkAvailable(Context context) {
@@ -160,7 +175,6 @@ public class MainActivityFragment extends Fragment {
     }
 
     private void refreshUI(){
-        Log.i(LOG_TAG, "refreshUI");
         Movie[] moviesArray;
         moviesList.clear();
         choiceOfSort = preferences.getString("orderPrefKey", "1");

@@ -1,23 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <dimen name="titleTextSize" tools:ignore="UnusedResources">50sp</dimen>
 
     <dimen name="movieDescPadding">10dp</dimen>
-    <dimen name="movieTitlePadding" tools:ignore="UnusedResources">20dp</dimen>
+    <dimen name="movieImageWidth">200dp</dimen>
+    <dimen name="movieImageHeight">250dp</dimen>
+
+    <dimen name="descriptionTVAbsoluteX">0dp</dimen>
 
     <dimen name="posterInDetailsHeight">200dp</dimen>
     <dimen name="posterInDetailsWidth">180dp</dimen>
     <dimen name="posterPadding">15dp</dimen>
-    <dimen name="postetMinHeight" tools:ignore="UnusedResources">300dp</dimen>
-    <dimen name="postetMinWidth" tools:ignore="UnusedResources">200dp</dimen>
+
+    <dimen name="titleMarginStartToolbar">18dp</dimen>
+    <dimen name="titleMarginEndToolbar">50dp</dimen>
 
     <dimen name="descWidth">0dp</dimen>
 
-    <dimen name="favouriteButtonPadding" tools:ignore="UnusedResources">10dp</dimen>
-    <dimen name="favouriteButtonMargin" tools:ignore="UnusedResources">10dp</dimen>
-
-    <dimen name="ratingTVMarginStart" tools:ignore="UnusedResources">20dp</dimen>
-
-    <dimen name="releaseTVMarginSize" tools:ignore="UnusedResources">20dp</dimen>
     <dimen name="releaseTextSize">30sp</dimen>
+
+    <dimen name="trailerSectionTextSize">20sp</dimen>
+
+    <dimen name="dividerHeight">1dp</dimen>
+    <dimen name="dividerPadding">1dp</dimen>
+
+    <dimen name="reviewSectionTVTextSize">20sp</dimen>
+
+    <dimen name="FAMarginEnd">10dp</dimen>
+
+    <dimen name="gridViewColumnWidth">150dp</dimen>
+    <dimen name="gridViewSpacing">0dp</dimen>
+
+    <dimen name="reviewAuthorTVWidth">0dp</dimen>
+    <dimen name="reviewAuthorTVTextSize">18sp</dimen>
+    <dimen name="reviewAuthorTVAbsoluteY">18dp</dimen>
+
+    <dimen name="reviewContentWidth">0dp</dimen>
+    <dimen name="reviewContentTextSize">16sp</dimen>
+
+    <dimen name="reviewURLWidth">0dp</dimen>
+    <dimen name="reviewURLMarginTop">8dp</dimen>
+    <dimen name="reviewURLTextSize">16sp</dimen>
+
+    <dimen name="trailerItemPadding">10dp</dimen>
+    <dimen name="trailerTitleWidth">0dp</dimen>
+    <dimen name="trailerTitleMargin">8dp</dimen>
+    <dimen name="trailerTitleTextSize">16sp</dimen>
+
 </resources>

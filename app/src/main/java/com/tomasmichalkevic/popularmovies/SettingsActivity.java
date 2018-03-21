@@ -93,6 +93,25 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean("checkboxChecked", favouriteViewPreference.isChecked());
+        outState.putBoolean("checkboxEnabled", favouriteViewPreference.isEnabled());
+        outState.putString("orderValue", orderPreference.getValue());
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle state) {
+        super.onRestoreInstanceState(state);
+        if(state != null){
+            favouriteViewPreference.setChecked(state.getBoolean("checkboxChecked"));
+            favouriteViewPreference.setEnabled(state.getBoolean("checkboxEnabled"));
+            orderPreference.setValue(state.getString("orderValue"));
+        }
+
+    }
+
+    @Override
     public void onBackPressed() {
         super.onBackPressed();
         setResult(RESULT_OK, null);

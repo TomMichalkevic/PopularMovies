@@ -44,12 +44,11 @@ import android.content.ActivityNotFoundException;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.CollapsingToolbarLayout;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -111,6 +110,7 @@ public class DetailsActivity extends Activity {
     @BindView(R.id.trailer_recycler_view) RecyclerView trailerRecyclerView;
     @BindView(R.id.review_recycler_view) RecyclerView reviewRecyclerView;
     @BindView(R.id.collapsingDetails) CollapsingToolbarLayout detailsLayout;
+    @BindView(R.id.detailsCoordinatorLayout) CoordinatorLayout detailsCoordinatorLayout;
 
     @SuppressLint("DefaultLocale")
     @Override
@@ -207,6 +207,28 @@ public class DetailsActivity extends Activity {
 
     }
 
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        if(savedInstanceState != null){
+            titleBackdrop.setContentDescription(savedInstanceState.getCharSequence("titleBackdrop"));
+            releaseTV.setText(savedInstanceState.getCharSequence("releaseTV"));
+            ratingTV.setText(savedInstanceState.getCharSequence("ratingTV"));
+            descriptionTV.setText(savedInstanceState.getCharSequence("descriptionTV"));
+        }
+
+
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putCharSequence("titleBackdrop", titleBackdrop.getContentDescription());
+        outState.putCharSequence("releaseTV", releaseTV.getText());
+        outState.putCharSequence("ratingTV", ratingTV.getText());
+        outState.putCharSequence("descriptionTV", descriptionTV.getText());
+    }
+
     private Trailer[] getFilteredOutTrailers(Trailer[] videos){
         ArrayList<Trailer> list = new ArrayList<>();
         Trailer[] result;
@@ -286,7 +308,7 @@ public class DetailsActivity extends Activity {
         String sortOrder = FavouritesContract.FavouriteEntry.COLUMN_ID + " ASC";
         String selection = FavouritesContract.FavouriteEntry.COLUMN_ID + " = ?";
         Cursor cursor = getContentResolver().query(FavouritesContract.FavouriteEntry.CONTENT_URI, null, selection, selectionArgs, sortOrder);
-        Log.i(LOG_TAG, "isFavouritedAlready: " + cursor.getCount());
+        cursor.close();
         return !(cursor.getCount()==0);
     }
 

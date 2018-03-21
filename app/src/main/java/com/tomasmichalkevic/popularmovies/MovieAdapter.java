@@ -51,7 +51,6 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
-import butterknife.BindDimen;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
