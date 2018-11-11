@@ -36,23 +36,10 @@
  * SOFTWARE.
  */
 
-package com.tomasmichalkevic.popularmovies.utils;
-
-import org.json.JSONArray;
-import org.json.JSONException;
+package com.tomasmichalkevic.popularmovies
 
 /**
- * Created by tomasmichalkevic on 21/02/2018.
+ * Created by tomasmichalkevic on 01/03/2018.
  */
 
-public class JsonUtils {
-
-    public static int[] getListFromJson(JSONArray jsonArray) throws JSONException {
-        int[] data = new int[jsonArray.length()];
-        for(int i = 0; i < jsonArray.length(); i++){
-            data[i] = jsonArray.getInt(i);
-        }
-        return data;
-    }
-
-}
+class Trailer(val id: String, val iso_639_1: String, val iso_3166_1: String, val key: String, val name: String, val site: String, val size: Int, val type: String)

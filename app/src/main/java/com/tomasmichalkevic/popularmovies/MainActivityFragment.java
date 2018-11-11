@@ -280,7 +280,7 @@ public class MainActivityFragment extends Fragment {
 
     private Movie getMovie(JSONObject object) throws JSONException {
         JSONArray array = object.getJSONArray("genre_ids");
-        int[] genreIDsList = JsonUtils.getListFromJson(array);
+        int[] genreIDsList = JsonUtils.INSTANCE.getListFromJson(array);
 
         return new Movie(object.getInt("vote_count"), object.getInt("id"), object.getBoolean("video"),
                 object.getDouble("vote_average"), object.getString("title"), object.getDouble("popularity"), object.getString("poster_path"),

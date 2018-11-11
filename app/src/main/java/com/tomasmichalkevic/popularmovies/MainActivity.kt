@@ -36,64 +36,35 @@
  * SOFTWARE.
  */
 
-package com.tomasmichalkevic.popularmovies;
+package com.tomasmichalkevic.popularmovies
 
-/**
- * Created by tomasmichalkevic on 01/03/2018.
- */
+import android.app.Activity
+import android.content.Intent
+import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 
-public class Trailer {
+class MainActivity : Activity() {
 
-    final String id;
-    final String iso_639_1;
-    final String iso_3166_1;
-    final String key;
-    final String name;
-    final String site;
-    final int size;
-    final String type;
-
-    public Trailer(String id, String iso_639_1, String iso_3166_1, String key, String name, String site, int size, String type) {
-        this.id = id;
-        this.iso_639_1 = iso_639_1;
-        this.iso_3166_1 = iso_3166_1;
-        this.key = key;
-        this.name = name;
-        this.site = site;
-        this.size = size;
-        this.type = type;
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
     }
 
-    public String getId() {
-        return id;
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
     }
 
-    public String getIso_639_1() {
-        return iso_639_1;
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val id = item.itemId
+        if (id == R.id.action_settings) {
+            startActivity(Intent(this@MainActivity, SettingsActivity::class.java))
+            return true
+        }
+
+        return super.onOptionsItemSelected(item)
     }
 
-    public String getIso_3166_1() {
-        return iso_3166_1;
-    }
-
-    public String getKey() {
-        return key;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getSite() {
-        return site;
-    }
-
-    public int getSize() {
-        return size;
-    }
-
-    public String getType() {
-        return type;
-    }
 
 }

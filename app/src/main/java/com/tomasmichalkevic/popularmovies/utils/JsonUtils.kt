@@ -36,38 +36,24 @@
  * SOFTWARE.
  */
 
-package com.tomasmichalkevic.popularmovies;
+package com.tomasmichalkevic.popularmovies.utils
 
-import android.app.Activity;
-import android.content.Intent;
-import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
+import org.json.JSONArray
+import org.json.JSONException
 
-public class MainActivity extends Activity {
+/**
+ * Created by tomasmichalkevic on 21/02/2018.
+ */
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-    }
+object JsonUtils {
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            startActivity(new Intent(MainActivity.this, SettingsActivity.class));
-            return true;
+    @Throws(JSONException::class)
+    fun getListFromJson(jsonArray: JSONArray): IntArray {
+        val data = IntArray(jsonArray.length())
+        for (i in 0 until jsonArray.length()) {
+            data[i] = jsonArray.getInt(i)
         }
-
-        return super.onOptionsItemSelected(item);
+        return data
     }
-
 
 }
