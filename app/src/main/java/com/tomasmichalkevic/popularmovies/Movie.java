@@ -45,7 +45,7 @@ import android.os.Parcelable;
  * Created by tomasmichalkevic on 19/02/2018.
  */
 
-public class Movie implements Parcelable{
+public class Movie implements Parcelable {
 
     final int voteCount;
     final int id;
