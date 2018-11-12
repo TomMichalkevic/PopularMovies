@@ -36,61 +36,40 @@
  * SOFTWARE.
  */
 
-package com.tomasmichalkevic.popularmovies;
+package com.tomasmichalkevic.popularmovies
 
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
+import android.support.v7.widget.RecyclerView
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 
-import java.util.List;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
+import kotlinx.android.synthetic.main.review_item.view.*
 
 /**
  * Created by tomasmichalkevic on 12/03/2018.
  */
 
-public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder>{
+class ReviewAdapter(private val reviewList: List<Review>) : RecyclerView.Adapter<ReviewAdapter.ViewHolder>() {
 
-    private final List<Review> reviewList;
-
-    public ReviewAdapter(List<Review> reviewList){
-        this.reviewList = reviewList;
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReviewAdapter.ViewHolder {
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.review_item, parent, false)
+        return ViewHolder(view)
     }
 
-    @NonNull
-    @Override
-    public ReviewAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.review_item, parent, false);
-        return new ReviewAdapter.ViewHolder(view);
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        holder.bind(reviewList[position])
     }
 
-    @Override
-    public void onBindViewHolder(@NonNull ReviewAdapter.ViewHolder holder, int position) {
-        Review review = reviewList.get(position);
-        holder.author.setText(review.getAuthor());
-        holder.content.setText(review.getContent());
-        holder.url.setText(review.getUrl());
+    override fun getItemCount(): Int {
+        return reviewList.size
     }
 
-    @Override
-    public int getItemCount() {
-        return reviewList.size();
-    }
+    inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
-
-        @BindView(R.id.author) TextView author;
-        @BindView(R.id.review_content) TextView content;
-        @BindView(R.id.review_url) TextView url;
-
-        public ViewHolder(View view) {
-            super(view);
-            ButterKnife.bind(this, view);
+        fun bind(review: Review) {
+            itemView.author.text = review.author
+            itemView.review_content.text = review.content
+            itemView.review_url.text = review.url
         }
     }
 }
