@@ -36,10 +36,14 @@
   ~ SOFTWARE.
   -->
 
-<fragment xmlns:android="http://schemas.android.com/apk/res/android"
+<GridView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/fragment"
-    android:name="com.tomasmichalkevic.popularmovies.MainActivityFragment"
-    tools:layout="@layout/fragment_main"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"/>
+    android:columnWidth="@dimen/gridViewColumnWidth"
+    android:numColumns="auto_fit"
+    android:verticalSpacing="@dimen/gridViewSpacing"
+    android:horizontalSpacing="@dimen/gridViewSpacing"
+    android:stretchMode="columnWidth"
+    tools:context=".MainActivity"
+    android:id="@+id/movies_grid">
+</GridView>
