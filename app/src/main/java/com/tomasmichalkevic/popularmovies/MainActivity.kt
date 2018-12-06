@@ -14,6 +14,7 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
+import com.google.gson.Gson
 
 import com.tomasmichalkevic.popularmovies.data.FavouritesContract
 import com.tomasmichalkevic.popularmovies.utils.JsonUtils
@@ -37,8 +38,13 @@ import com.tomasmichalkevic.popularmovies.data.FavouritesContract.FavouriteEntry
 import com.tomasmichalkevic.popularmovies.data.FavouritesContract.FavouriteEntry.COLUMN_VIDEO
 import com.tomasmichalkevic.popularmovies.data.FavouritesContract.FavouriteEntry.COLUMN_VOTE_AVERAGE
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.*
+import org.jetbrains.anko.longToast
+import java.net.URL
 
-class MainActivity : Activity() {
+class MainActivity : Activity(), CoroutineScope {
+
+    override val coroutineContext = Dispatchers.Main + SupervisorJob()
 
     private var movieAdapter: MovieAdapter? = null
 
@@ -48,7 +54,7 @@ class MainActivity : Activity() {
     private val popularMoviesURL = "http://api.themoviedb.org/3/movie/popular?api_key=$API_KEY"
     private val topRatedMoviesURL = "http://api.themoviedb.org/3/movie/top_rated?api_key=$API_KEY"
 
-    private val moviesList = ArrayList<Movie>()
+    private var moviesList: MutableList<Movie> = mutableListOf()
 
     private var preferences: SharedPreferences? = null
 
@@ -69,111 +75,86 @@ class MainActivity : Activity() {
         choiceOfSort = preferences!!.getString("orderPrefKey", "1")
         favouriteView = preferences!!.getBoolean("favouriteCheckBox", false)
 
-        var movies: Array<Movie>? = arrayOf()
+        movieAdapter = MovieAdapter(this, moviesList)
 
+        moviesList.clear()
         if (isNetworkAvailable(this)) {
             if (favouriteView) {
-                movies = getFavoriteMovies()
+                //getFavoriteMovies()
             } else {
-                movies = getMovies()
+                getMovies()
             }
-
         } else {
             Toast.makeText(this, "Cannot refresh due to no network!", Toast.LENGTH_LONG).show()
         }
-
-        moviesList.clear()
-        Collections.addAll(moviesList, *movies!!)
-
-        movieAdapter = MovieAdapter(this, moviesList)
-        movies_grid.adapter = movieAdapter
     }
 
-    fun getResponseJSON(): String {
-        var result = ""
-
-        val httpGetRequest = HttpGetRequest()
-
-        try {
-            when (choiceOfSort) {
-                "1" -> {
-                    result = httpGetRequest.execute(popularMoviesURL).get()
-                }
-                "2" -> {
-                    result = httpGetRequest.execute(topRatedMoviesURL).get()
-                }
+    private fun getResponseJSON(): String {
+        when (choiceOfSort) {
+            "1" -> {
+                return URL(popularMoviesURL).readText()
             }
-
-
-        } catch (e: InterruptedException) {
-            Log.e(LOG_TAG, "getResponseJSON: ", e)
-        } catch (e: ExecutionException) {
-            Log.e(LOG_TAG, "getResponseJSON: ", e)
-        } finally {
-            return result
+            "2" -> {
+                return URL(topRatedMoviesURL).readText()
+            }
+            else -> return URL(popularMoviesURL).readText()
         }
     }
 
-    fun getMovies(): Array<Movie>? {
-        val result = getResponseJSON()
-        val jsonObject: JSONObject
-        var moviesList: MutableList<Movie> = mutableListOf()
-
-        return try {
-            jsonObject = JSONObject(result)
-            val movies = jsonObject.getJSONArray("results")
-            var i = movies.length() - 1
-            while (i >= 0) {
-                moviesList.add(getMovie(movies.get(i) as JSONObject))
-                i--
-            }
-            moviesList.toTypedArray()
-        } catch (e: JSONException) {
-            Log.e(LOG_TAG, "JSON malformed", e)
-            null
+    fun getMovies() {
+        launch{
+            val result = withContext(Dispatchers.IO){ getResponseJSON() }
+            moviesList.addAll(Gson().fromJson(result, MovieDBResponse::class.java).results)
+            longToast(moviesList.size.toString())
+            movies_grid.adapter = movieAdapter
         }
     }
 
-    fun getFavoriteMovies(): Array<Movie> {
-        var movies: MutableList<Movie> = mutableListOf()
-
-        val sortOrder = "$COLUMN_ID ASC"
-
-        val cursor = contentResolver.query(FavouritesContract.FavouriteEntry.CONTENT_URI, null, null, null, sortOrder)
-
-        if (cursor!!.moveToFirst()) {
-            movies.add(Movie(1,
-                    cursor.getInt(cursor.getColumnIndex(COLUMN_ID)),
-                    cursor.getInt(cursor.getColumnIndex(COLUMN_VIDEO)) == 1,
-                    cursor.getDouble(cursor.getColumnIndex(COLUMN_VOTE_AVERAGE)),
-                    cursor.getString(cursor.getColumnIndex(COLUMN_TITLE)),
-                    cursor.getDouble(cursor.getColumnIndex(COLUMN_POPULARITY)),
-                    cursor.getString(cursor.getColumnIndex(COLUMN_POSTER_PATH)),
-                    cursor.getString(cursor.getColumnIndex(COLUMN_ORIGINAL_LANG)),
-                    cursor.getString(cursor.getColumnIndex(COLUMN_ORIGINAL_TITLE)),
-                    IntArray(0), cursor.getString(cursor.getColumnIndex(COLUMN_BACKDROP_PATH)),
-                    cursor.getInt(cursor.getColumnIndex(COLUMN_ADULT_MOVIE)) == 1,
-                    cursor.getString(cursor.getColumnIndex(COLUMN_OVERVIEW)),
-                    cursor.getString(cursor.getColumnIndex(COLUMN_RELEASE_DATE))))
-            while (cursor.moveToNext()) {
-                movies.add(Movie(1,
-                        cursor.getInt(cursor.getColumnIndex(COLUMN_ID)),
-                        cursor.getInt(cursor.getColumnIndex(COLUMN_VIDEO)) == 1,
-                        cursor.getDouble(cursor.getColumnIndex(COLUMN_VOTE_AVERAGE)),
-                        cursor.getString(cursor.getColumnIndex(COLUMN_TITLE)),
-                        cursor.getDouble(cursor.getColumnIndex(COLUMN_POPULARITY)),
-                        cursor.getString(cursor.getColumnIndex(COLUMN_POSTER_PATH)),
-                        cursor.getString(cursor.getColumnIndex(COLUMN_ORIGINAL_LANG)),
-                        cursor.getString(cursor.getColumnIndex(COLUMN_ORIGINAL_TITLE)),
-                        IntArray(0), cursor.getString(cursor.getColumnIndex(COLUMN_BACKDROP_PATH)),
-                        cursor.getInt(cursor.getColumnIndex(COLUMN_ADULT_MOVIE)) == 1,
-                        cursor.getString(cursor.getColumnIndex(COLUMN_OVERVIEW)),
-                        cursor.getString(cursor.getColumnIndex(COLUMN_RELEASE_DATE))))
-            }
-        }
-        cursor.close()
-        return movies.toTypedArray()
+    override fun onDestroy() {
+        super.onDestroy()
+        coroutineContext[Job]!!.cancel()
     }
+
+//    fun getFavoriteMovies(): Array<Movie> {
+//        var movies: MutableList<Movie> = mutableListOf()
+//
+//        val sortOrder = "$COLUMN_ID ASC"
+//
+//        val cursor = contentResolver.query(FavouritesContract.FavouriteEntry.CONTENT_URI, null, null, null, sortOrder)
+//
+//        if (cursor!!.moveToFirst()) {
+//            movies.add(Movie(1,
+//                    cursor.getInt(cursor.getColumnIndex(COLUMN_ID)),
+//                    cursor.getInt(cursor.getColumnIndex(COLUMN_VIDEO)) == 1,
+//                    cursor.getDouble(cursor.getColumnIndex(COLUMN_VOTE_AVERAGE)),
+//                    cursor.getString(cursor.getColumnIndex(COLUMN_TITLE)),
+//                    cursor.getDouble(cursor.getColumnIndex(COLUMN_POPULARITY)),
+//                    cursor.getString(cursor.getColumnIndex(COLUMN_POSTER_PATH)),
+//                    cursor.getString(cursor.getColumnIndex(COLUMN_ORIGINAL_LANG)),
+//                    cursor.getString(cursor.getColumnIndex(COLUMN_ORIGINAL_TITLE)),
+//                    IntArray(0), cursor.getString(cursor.getColumnIndex(COLUMN_BACKDROP_PATH)),
+//                    cursor.getInt(cursor.getColumnIndex(COLUMN_ADULT_MOVIE)) == 1,
+//                    cursor.getString(cursor.getColumnIndex(COLUMN_OVERVIEW)),
+//                    cursor.getString(cursor.getColumnIndex(COLUMN_RELEASE_DATE))))
+//            while (cursor.moveToNext()) {
+//                movies.add(Movie(1,
+//                        cursor.getInt(cursor.getColumnIndex(COLUMN_ID)),
+//                        cursor.getInt(cursor.getColumnIndex(COLUMN_VIDEO)) == 1,
+//                        cursor.getDouble(cursor.getColumnIndex(COLUMN_VOTE_AVERAGE)),
+//                        cursor.getString(cursor.getColumnIndex(COLUMN_TITLE)),
+//                        cursor.getDouble(cursor.getColumnIndex(COLUMN_POPULARITY)),
+//                        cursor.getString(cursor.getColumnIndex(COLUMN_POSTER_PATH)),
+//                        cursor.getString(cursor.getColumnIndex(COLUMN_ORIGINAL_LANG)),
+//                        cursor.getString(cursor.getColumnIndex(COLUMN_ORIGINAL_TITLE)),
+//                        IntArray(0), cursor.getString(cursor.getColumnIndex(COLUMN_BACKDROP_PATH)),
+//                        cursor.getInt(cursor.getColumnIndex(COLUMN_ADULT_MOVIE)) == 1,
+//                        cursor.getString(cursor.getColumnIndex(COLUMN_OVERVIEW)),
+//                        cursor.getString(cursor.getColumnIndex(COLUMN_RELEASE_DATE))))
+//            }
+//        }
+//        cursor.close()
+//        return movies.toTypedArray()
+//    }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
@@ -210,29 +191,16 @@ class MainActivity : Activity() {
     }
 
     private fun refreshUI() {
-        val moviesArray: Array<Movie>?
         moviesList.clear()
         choiceOfSort = preferences!!.getString("orderPrefKey", "1")
         favouriteView = preferences!!.getBoolean("favouriteCheckBox", false)
         if (!favouriteView) {
-            moviesArray = getMovies()
+            getMovies()
         } else {
-            moviesArray = favouriteMovies
+            //moviesArray = favouriteMovies
         }
 
-        Collections.addAll(moviesList, *moviesArray!!)
         movieAdapter!!.notifyDataSetChanged()
-    }
-
-    @Throws(JSONException::class)
-    private fun getMovie(`object`: JSONObject): Movie {
-        val array = `object`.getJSONArray("genre_ids")
-        val genreIDsList = JsonUtils.getListFromJson(array)
-
-        return Movie(`object`.getInt("vote_count"), `object`.getInt("id"), `object`.getBoolean("video"),
-                `object`.getDouble("vote_average"), `object`.getString("title"), `object`.getDouble("popularity"), `object`.getString("poster_path"),
-                `object`.getString("original_language"), `object`.getString("original_title"), genreIDsList, `object`.getString("backdrop_path"),
-                `object`.getBoolean("adult"), `object`.getString("overview"), `object`.getString("release_date"))
     }
 
     companion object {

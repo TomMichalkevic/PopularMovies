@@ -167,41 +167,41 @@ class DetailsActivity : Activity() {
             finish()
         }
 
-        val movie = intent!!.getParcelableExtra<Movie>("Movie")
-        val voteAverage = movie.voteAverage
-        val title = movie.title
-        val posterPath = movie.posterPath
-        val overview = movie.overview
-        val releaseDate = movie.releaseDate
-        val backdropPath = movie.backdropPath
-
-        alreadyFavourited = isFavouritedAlready(movie)
+        //val movie = intent!!.getParcelableExtra<Movie>("Movie")
+//        val voteAverage = movie.voteAverage
+//        val title = movie.title
+//        val posterPath = movie.posterPath
+//        val overview = movie.overview
+//        val releaseDate = movie.releaseDate
+//        val backdropPath = movie.backdropPath
+//
+//        alreadyFavourited = isFavouritedAlready(movie)
 
         if (alreadyFavourited) {
             favourite_fab.setImageDrawable(resources.getDrawable(android.R.drawable.btn_star_big_on))
         } else {
             favourite_fab.setImageDrawable(resources.getDrawable(android.R.drawable.btn_star_big_off))
         }
-        Picasso.with(this@DetailsActivity).load("http://image.tmdb.org/t/p/w185$posterPath").into(poster_iv)
-        collapsingDetails.title = title
-        Picasso.with(this@DetailsActivity).load("http://image.tmdb.org/t/p/w500$backdropPath").into(title_iv)
-        release_tv.text = releaseDate.substring(0, 4)
-        rating_tv.text = String.format("%d/10", Math.round(voteAverage))
-        description_tv.text = overview
+//        Picasso.with(this@DetailsActivity).load("http://image.tmdb.org/t/p/w185$posterPath").into(poster_iv)
+//        collapsingDetails.title = title
+//        Picasso.with(this@DetailsActivity).load("http://image.tmdb.org/t/p/w500$backdropPath").into(title_iv)
+//        release_tv.text = releaseDate.substring(0, 4)
+//        rating_tv.text = String.format("%d/10", Math.round(voteAverage))
+//        description_tv.text = overview
 
         favourite_fab.setOnClickListener {
             if (alreadyFavourited) {
                 Toast.makeText(applicationContext, "The movie is already added to favourites!", Toast.LENGTH_LONG).show()
             } else {
-                if (insertData(movie)) {
-                    Toast.makeText(applicationContext, "The movie is now added to favourites!", Toast.LENGTH_LONG).show()
-                    favourite_fab.setImageDrawable(resources.getDrawable(android.R.drawable.btn_star_big_on))
-                }
+//                if (insertData(movie)) {
+//                    Toast.makeText(applicationContext, "The movie is now added to favourites!", Toast.LENGTH_LONG).show()
+//                    favourite_fab.setImageDrawable(resources.getDrawable(android.R.drawable.btn_star_big_on))
+//                }
             }
         }
 
         trailer_recycler_view.adapter = trailerAdapter
-        movieTrailerAddress = String.format(trailersURL, movie.id)
+        //movieTrailerAddress = String.format(trailersURL, movie.id)
         trailerList.clear()
 
         Collections.addAll(trailerList, *getFilteredOutTrailers(trailers!!))
@@ -209,7 +209,7 @@ class DetailsActivity : Activity() {
         trailerAdapter!!.notifyDataSetChanged()
 
         review_recycler_view.adapter = reviewAdapter
-        reviewAddress = String.format(reviewURL, movie.id)
+        //reviewAddress = String.format(reviewURL, movie.id)
         reviewList.clear()
 
         Collections.addAll(reviewList, *reviews!!)
@@ -252,20 +252,21 @@ class DetailsActivity : Activity() {
     private fun getResponseJSON(choice: Int): String {
         var result = ""
 
-        val httpGetRequest = HttpGetRequest()
+        //val httpGetRequest = HttpGetRequest()
 
-        try {
-            if (choice == 0)
-                result = httpGetRequest.execute(movieTrailerAddress).get()
-            else if (choice == 1)
-                result = httpGetRequest.execute(reviewAddress).get()
-        } catch (e: InterruptedException) {
-            Log.e(LOG_TAG, "getResponseJSON: ", e)
-        } catch (e: ExecutionException) {
-            Log.e(LOG_TAG, "getResponseJSON: ", e)
-        } finally {
-            return result
-        }
+//        try {
+//            if (choice == 0)
+//                //result = httpGetRequest.execute(movieTrailerAddress).get()
+//            else if (choice == 1)
+//                //result = httpGetRequest.execute(reviewAddress).get()
+//        } catch (e: InterruptedException) {
+//            Log.e(LOG_TAG, "getResponseJSON: ", e)
+//        } catch (e: ExecutionException) {
+//            Log.e(LOG_TAG, "getResponseJSON: ", e)
+//        } finally {
+//            return result
+//        }
+        return result
     }
 
     @Throws(JSONException::class)
@@ -288,27 +289,27 @@ class DetailsActivity : Activity() {
     }
 
     private fun insertData(movie: Movie): Boolean {
-        if (!isFavouritedAlready(movie)) {
-            val values = ContentValues()
-            values.put(FavouritesContract.FavouriteEntry.COLUMN_ID, movie.id)
-            values.put(FavouritesContract.FavouriteEntry.COLUMN_VIDEO, movie.video)
-            values.put(FavouritesContract.FavouriteEntry.COLUMN_VOTE_AVERAGE, movie.voteAverage)
-            values.put(FavouritesContract.FavouriteEntry.COLUMN_TITLE, movie.title)
-            values.put(FavouritesContract.FavouriteEntry.COLUMN_POPULARITY, movie.popularity)
-            values.put(FavouritesContract.FavouriteEntry.COLUMN_POSTER_PATH, movie.posterPath)
-            values.put(FavouritesContract.FavouriteEntry.COLUMN_ORIGINAL_LANG, movie.originalLang)
-            values.put(FavouritesContract.FavouriteEntry.COLUMN_ORIGINAL_TITLE, movie.originalTitle)
-            values.put(FavouritesContract.FavouriteEntry.COLUMN_BACKDROP_PATH, movie.backdropPath)
-            values.put(FavouritesContract.FavouriteEntry.COLUMN_ADULT_MOVIE, movie.adultMovie)
-            values.put(FavouritesContract.FavouriteEntry.COLUMN_OVERVIEW, movie.overview)
-            values.put(FavouritesContract.FavouriteEntry.COLUMN_RELEASE_DATE, movie.releaseDate)
-
-            contentResolver.insert(FavouritesContract.FavouriteEntry.CONTENT_URI, values)
-            return true
-        } else {
-            return false
-        }
-
+//        if (!isFavouritedAlready(movie)) {
+//            val values = ContentValues()
+//            values.put(FavouritesContract.FavouriteEntry.COLUMN_ID, movie.id)
+//            values.put(FavouritesContract.FavouriteEntry.COLUMN_VIDEO, movie.video)
+//            values.put(FavouritesContract.FavouriteEntry.COLUMN_VOTE_AVERAGE, movie.voteAverage)
+//            values.put(FavouritesContract.FavouriteEntry.COLUMN_TITLE, movie.title)
+//            values.put(FavouritesContract.FavouriteEntry.COLUMN_POPULARITY, movie.popularity)
+//            values.put(FavouritesContract.FavouriteEntry.COLUMN_POSTER_PATH, movie.posterPath)
+//            values.put(FavouritesContract.FavouriteEntry.COLUMN_ORIGINAL_LANG, movie.originalLang)
+//            values.put(FavouritesContract.FavouriteEntry.COLUMN_ORIGINAL_TITLE, movie.originalTitle)
+//            values.put(FavouritesContract.FavouriteEntry.COLUMN_BACKDROP_PATH, movie.backdropPath)
+//            values.put(FavouritesContract.FavouriteEntry.COLUMN_ADULT_MOVIE, movie.adultMovie)
+//            values.put(FavouritesContract.FavouriteEntry.COLUMN_OVERVIEW, movie.overview)
+//            values.put(FavouritesContract.FavouriteEntry.COLUMN_RELEASE_DATE, movie.releaseDate)
+//
+//            contentResolver.insert(FavouritesContract.FavouriteEntry.CONTENT_URI, values)
+//            return true
+//        } else {
+//            return false
+//        }
+return false
 
     }
 

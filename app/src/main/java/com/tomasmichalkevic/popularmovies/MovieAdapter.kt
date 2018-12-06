@@ -67,7 +67,7 @@ internal class MovieAdapter(context: Activity, movies: List<Movie>) : ArrayAdapt
         Picasso.with(context).load("http://image.tmdb.org/t/p/w185" + movie!!.posterPath).into(returnedView?.movie_image)
         returnedView?.movie_image?.setOnClickListener {
             val intent = Intent(context, DetailsActivity::class.java)
-            intent.putExtra("Movie", movie)
+            //intent.putExtra("Movie", movie)
             context.startActivity(intent)
         }
 
