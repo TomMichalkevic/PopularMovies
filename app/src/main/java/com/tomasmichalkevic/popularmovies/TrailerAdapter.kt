@@ -48,10 +48,10 @@ import kotlinx.android.synthetic.main.trailer_item.view.*
  * Created by tomasmichalkevic on 01/03/2018.
  */
 
-class TrailerAdapter(private val trailerList: List<Trailer>, private val listener: OnItemClickListener) : RecyclerView.Adapter<TrailerAdapter.ViewHolder>() {
+class TrailerAdapter(private val trailerList: List<Result>, private val listener: OnItemClickListener) : RecyclerView.Adapter<TrailerAdapter.ViewHolder>() {
 
     interface OnItemClickListener {
-        fun onItemClick(item: Trailer)
+        fun onItemClick(item: Result)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -69,7 +69,7 @@ class TrailerAdapter(private val trailerList: List<Trailer>, private val listene
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
-        fun bind(trailer: Trailer, listener: OnItemClickListener) {
+        fun bind(trailer: Result, listener: OnItemClickListener) {
             itemView.trailer_title.text = trailer.name
             itemView.imageButtonTrailer.setOnClickListener { listener.onItemClick(trailer) }
         }

@@ -51,6 +51,8 @@ import android.util.Log
 import android.widget.Toast
 
 import com.facebook.stetho.Stetho
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.squareup.picasso.Picasso
 import com.tomasmichalkevic.popularmovies.data.FavouritesContract
 
@@ -63,18 +65,23 @@ import java.util.Collections
 import java.util.concurrent.ExecutionException
 
 import kotlinx.android.synthetic.main.activity_detail.*
+import kotlinx.coroutines.*
+import org.jetbrains.anko.longToast
+import java.net.URL
 
 /**
  * Created by tomasmichalkevic on 21/02/2018.
  */
 
-class DetailsActivity : Activity() {
+class DetailsActivity : Activity(), CoroutineScope {
+
+    override val coroutineContext = Dispatchers.Main + SupervisorJob()
 
     private val trailersURL = "http://api.themoviedb.org/3/movie/%d/videos?api_key=$API_KEY"
     private val reviewURL = "http://api.themoviedb.org/3/movie/%d/reviews?api_key=$API_KEY"
 
-    private val trailerList = ArrayList<Trailer>()
-    private val reviewList = ArrayList<Review>()
+    private val trailerList: MutableList<Result> = mutableListOf()
+    private val reviewList: MutableList<Review> = mutableListOf()
 
     private var trailerAdapter: TrailerAdapter? = null
     private var reviewAdapter: ReviewAdapter? = null
@@ -87,50 +94,6 @@ class DetailsActivity : Activity() {
 
     private var alreadyFavourited = false
 
-    private val trailers: Array<Trailer>?
-        get() {
-            val result: String = getResponseJSON(0)
-            val jsonObject: JSONObject
-            var trailerArray: MutableList<Trailer> = mutableListOf()
-
-            return try {
-                jsonObject = JSONObject(result)
-                val trailers: JSONArray = jsonObject.getJSONArray("results")
-                var i = trailers.length() - 1
-                while (i >= 0) {
-                    trailerArray.add(getTrailer(trailers.get(i) as JSONObject))
-                    i--
-                }
-                trailerArray.toTypedArray()
-            } catch (e: JSONException) {
-                Log.e(LOG_TAG, "JSON malformed", e)
-                null
-            }
-
-        }
-
-    private val reviews: Array<Review>?
-        get() {
-            val result: String = getResponseJSON(1)
-            val jsonObject: JSONObject
-            val reviewArray: MutableList<Review> = mutableListOf()
-
-            return try {
-                jsonObject = JSONObject(result)
-                val reviews = jsonObject.getJSONArray("results")
-                var i = reviews.length() - 1
-                while (i >= 0) {
-                    reviewArray.add(getReview(reviews.get(i) as JSONObject))
-                    i--
-                }
-                reviewArray.toTypedArray()
-            } catch (e: JSONException) {
-                Log.e(LOG_TAG, "JSON malformed", e)
-                null
-            }
-
-        }
-
     @SuppressLint("DefaultLocale")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -138,7 +101,7 @@ class DetailsActivity : Activity() {
         setContentView(R.layout.activity_detail)
 
         trailerAdapter = TrailerAdapter(trailerList, object : TrailerAdapter.OnItemClickListener {
-            override fun onItemClick(item: Trailer) {
+            override fun onItemClick(item: Result) {
                 val appIntent = Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + item.key))
                 val webIntent = Intent(Intent.ACTION_VIEW,
                         Uri.parse("http://www.youtube.com/watch?v=" + item.key))
@@ -167,53 +130,48 @@ class DetailsActivity : Activity() {
             finish()
         }
 
-        //val movie = intent!!.getParcelableExtra<Movie>("Movie")
-//        val voteAverage = movie.voteAverage
-//        val title = movie.title
-//        val posterPath = movie.posterPath
-//        val overview = movie.overview
-//        val releaseDate = movie.releaseDate
-//        val backdropPath = movie.backdropPath
-//
-//        alreadyFavourited = isFavouritedAlready(movie)
+        val movie = Gson().fromJson(intent!!.getStringExtra("Movie"), Movie::class.java)
+        val voteAverage = movie.voteAverage
+        val title = movie.title
+        val posterPath = movie.posterPath
+        val overview = movie.overview
+        val releaseDate = movie.releaseDate
+        val backdropPath = movie.backdropPath
+
+        alreadyFavourited = isFavouritedAlready(movie)
 
         if (alreadyFavourited) {
             favourite_fab.setImageDrawable(resources.getDrawable(android.R.drawable.btn_star_big_on))
         } else {
             favourite_fab.setImageDrawable(resources.getDrawable(android.R.drawable.btn_star_big_off))
         }
-//        Picasso.with(this@DetailsActivity).load("http://image.tmdb.org/t/p/w185$posterPath").into(poster_iv)
-//        collapsingDetails.title = title
-//        Picasso.with(this@DetailsActivity).load("http://image.tmdb.org/t/p/w500$backdropPath").into(title_iv)
-//        release_tv.text = releaseDate.substring(0, 4)
-//        rating_tv.text = String.format("%d/10", Math.round(voteAverage))
-//        description_tv.text = overview
+        Picasso.with(this@DetailsActivity).load("http://image.tmdb.org/t/p/w185$posterPath").into(poster_iv)
+        collapsingDetails.title = title
+        Picasso.with(this@DetailsActivity).load("http://image.tmdb.org/t/p/w500$backdropPath").into(title_iv)
+        release_tv.text = releaseDate.substring(0, 4)
+        rating_tv.text = String.format("%d/10", Math.round(voteAverage))
+        description_tv.text = overview
 
-        favourite_fab.setOnClickListener {
-            if (alreadyFavourited) {
-                Toast.makeText(applicationContext, "The movie is already added to favourites!", Toast.LENGTH_LONG).show()
-            } else {
+//        favourite_fab.setOnClickListener {
+//            if (alreadyFavourited) {
+//                Toast.makeText(applicationContext, "The movie is already added to favourites!", Toast.LENGTH_LONG).show()
+//            } else {
 //                if (insertData(movie)) {
 //                    Toast.makeText(applicationContext, "The movie is now added to favourites!", Toast.LENGTH_LONG).show()
 //                    favourite_fab.setImageDrawable(resources.getDrawable(android.R.drawable.btn_star_big_on))
 //                }
-            }
-        }
+        //}
+        //}
 
         trailer_recycler_view.adapter = trailerAdapter
-        //movieTrailerAddress = String.format(trailersURL, movie.id)
+        movieTrailerAddress = String.format(trailersURL, movie.id)
         trailerList.clear()
 
-        Collections.addAll(trailerList, *getFilteredOutTrailers(trailers!!))
-
-        trailerAdapter!!.notifyDataSetChanged()
+        getTrailers()
 
         review_recycler_view.adapter = reviewAdapter
-        //reviewAddress = String.format(reviewURL, movie.id)
+        reviewAddress = String.format(reviewURL, movie.id)
         reviewList.clear()
-
-        Collections.addAll(reviewList, *reviews!!)
-
 
         reviewAdapter!!.notifyDataSetChanged()
 
@@ -231,6 +189,14 @@ class DetailsActivity : Activity() {
 
     }
 
+    private fun getTrailers() {
+        launch {
+            val result = withContext(Dispatchers.IO) { getResponseJSON(0) }
+            trailerList.addAll(Gson().fromJson(result, Trailer::class.java).results)
+            trailerAdapter!!.notifyDataSetChanged()
+        }
+    }
+
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putCharSequence("titleBackdrop", title_iv.contentDescription)
@@ -239,8 +205,8 @@ class DetailsActivity : Activity() {
         outState.putCharSequence("descriptionTV", description_tv.text)
     }
 
-    private fun getFilteredOutTrailers(videos: Array<Trailer>): Array<Trailer> {
-        val list: MutableList<Trailer> = mutableListOf()
+    private fun getFilteredOutTrailers(videos: Array<Result>): Array<Result> {
+        val list: MutableList<Result> = mutableListOf()
         for (trailer in videos) {
             if (trailer.type == "Trailer") {
                 list.add(trailer)
@@ -250,28 +216,11 @@ class DetailsActivity : Activity() {
     }
 
     private fun getResponseJSON(choice: Int): String {
-        var result = ""
-
-        //val httpGetRequest = HttpGetRequest()
-
-//        try {
-//            if (choice == 0)
-//                //result = httpGetRequest.execute(movieTrailerAddress).get()
-//            else if (choice == 1)
-//                //result = httpGetRequest.execute(reviewAddress).get()
-//        } catch (e: InterruptedException) {
-//            Log.e(LOG_TAG, "getResponseJSON: ", e)
-//        } catch (e: ExecutionException) {
-//            Log.e(LOG_TAG, "getResponseJSON: ", e)
-//        } finally {
-//            return result
-//        }
-        return result
-    }
-
-    @Throws(JSONException::class)
-    private fun getTrailer(`object`: JSONObject): Trailer {
-        return Trailer(`object`.getString("id"), `object`.getString("iso_639_1"), `object`.getString("iso_3166_1"), `object`.getString("key"), `object`.getString("name"), `object`.getString("site"), `object`.getInt("size"), `object`.getString("type"))
+        return when (choice) {
+            0 -> URL(movieTrailerAddress).readText()
+            1 -> URL(reviewAddress).readText()
+            else -> URL(trailersURL).readText()
+        }
     }
 
     @Throws(JSONException::class)
@@ -309,14 +258,12 @@ class DetailsActivity : Activity() {
 //        } else {
 //            return false
 //        }
-return false
+        return false
 
     }
 
     companion object {
 
-        private val LOG_TAG = DetailsActivity::class.java.simpleName
-
-        private val API_KEY = BuildConfig.MOVIE_DB_API_KEY
+        private const val API_KEY = BuildConfig.MOVIE_DB_API_KEY
     }
 }

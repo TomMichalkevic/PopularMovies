@@ -90,18 +90,14 @@ class MainActivity : Activity(), CoroutineScope {
     }
 
     private fun getResponseJSON(): String {
-        when (choiceOfSort) {
-            "1" -> {
-                return URL(popularMoviesURL).readText()
-            }
-            "2" -> {
-                return URL(topRatedMoviesURL).readText()
-            }
-            else -> return URL(popularMoviesURL).readText()
+        return when (choiceOfSort) {
+            "1" -> URL(popularMoviesURL).readText()
+            "2" -> URL(topRatedMoviesURL).readText()
+            else -> URL(popularMoviesURL).readText()
         }
     }
 
-    fun getMovies() {
+    private fun getMovies() {
         launch{
             val result = withContext(Dispatchers.IO){ getResponseJSON() }
             moviesList.addAll(Gson().fromJson(result, MovieDBResponse::class.java).results)
@@ -205,9 +201,7 @@ class MainActivity : Activity(), CoroutineScope {
 
     companion object {
 
-        private val LOG_TAG = MainActivity::class.java.simpleName
-
-        private val API_KEY = BuildConfig.MOVIE_DB_API_KEY
+        private const val API_KEY = BuildConfig.MOVIE_DB_API_KEY
 
         fun isNetworkAvailable(context: Context): Boolean {
             val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager

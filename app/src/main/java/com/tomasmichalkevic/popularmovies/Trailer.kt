@@ -38,8 +38,26 @@
 
 package com.tomasmichalkevic.popularmovies
 
+import com.google.gson.annotations.SerializedName
+
 /**
  * Created by tomasmichalkevic on 01/03/2018.
  */
 
-class Trailer(val id: String, val iso_639_1: String, val iso_3166_1: String, val key: String, val name: String, val site: String, val size: Int, val type: String)
+data class Trailer(@SerializedName("id")
+                   private val _id: Int = 0,
+                   @SerializedName("results")
+                   private val _results: List<Result> = arrayListOf()) {
+
+
+    val id
+        get() = _id
+
+    val results
+        get() = _results
+
+    init {
+        this.id
+        this.results
+    }
+}
