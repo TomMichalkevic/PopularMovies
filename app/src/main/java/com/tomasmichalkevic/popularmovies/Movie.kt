@@ -2,34 +2,36 @@ package com.tomasmichalkevic.popularmovies
 
 import com.google.gson.annotations.SerializedName
 
-data class Movie(@SerializedName("vote_count")
-                 private val _voteCount: Int = 0,
-                 @SerializedName("id")
-                 private val _id: Int = 0,
-                 @SerializedName("video")
-                 private val _isVideo: Boolean = false,
-                 @SerializedName("vote_average")
-                 private val _voteAverage: Double = 0.toDouble(),
-                 @SerializedName("title")
-                 private val _title: String? = "",
-                 @SerializedName("popularity")
-                 private val _popularity: Double = 0.toDouble(),
-                 @SerializedName("poster_path")
-                 private val _posterPath: String? = "",
-                 @SerializedName("original_language")
-                 private val _originalLanguage: String? = "",
-                 @SerializedName("original_title")
-                 private val _originalTitle: String? = "",
-                 @SerializedName("genre_ids")
-                 private val _genreIds: List<Int>? = arrayListOf(),
-                 @SerializedName("backdrop_path")
-                 private val _backdropPath: String? = "",
-                 @SerializedName("adult")
-                 private val _isAdult: Boolean = false,
-                 @SerializedName("overview")
-                 private val _overview: String? = "",
-                 @SerializedName("release_date")
-                 private val _releaseDate: String? = "") {
+data class Movie(
+    @SerializedName("vote_count")
+    private val _voteCount: Int = 0,
+    @SerializedName("id")
+    private val _id: Int = 0,
+    @SerializedName("video")
+    private val _isVideo: Boolean = false,
+    @SerializedName("vote_average")
+    private val _voteAverage: Double = 0.toDouble(),
+    @SerializedName("title")
+    private val _title: String? = "",
+    @SerializedName("popularity")
+    private val _popularity: Double = 0.toDouble(),
+    @SerializedName("poster_path")
+    private val _posterPath: String? = "",
+    @SerializedName("original_language")
+    private val _originalLanguage: String? = "",
+    @SerializedName("original_title")
+    private val _originalTitle: String? = "",
+    @SerializedName("genre_ids")
+    private val _genreIds: List<Int>? = arrayListOf(),
+    @SerializedName("backdrop_path")
+    private val _backdropPath: String? = "",
+    @SerializedName("adult")
+    private val _isAdult: Boolean = false,
+    @SerializedName("overview")
+    private val _overview: String? = "",
+    @SerializedName("release_date")
+    private val _releaseDate: String? = ""
+) {
     val voteCount
         get() = _voteCount
 
@@ -88,8 +90,4 @@ data class Movie(@SerializedName("vote_count")
         this.overview
         this.releaseDate
     }
-
 }
-
-
-

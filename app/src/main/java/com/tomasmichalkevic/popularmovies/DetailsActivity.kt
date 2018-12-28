@@ -41,32 +41,21 @@ package com.tomasmichalkevic.popularmovies
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ActivityNotFoundException
-import android.content.ContentValues
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.util.Log
-import android.widget.Toast
-
 import com.facebook.stetho.Stetho
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import com.squareup.picasso.Picasso
 import com.tomasmichalkevic.popularmovies.data.FavouritesContract
-
-import org.json.JSONArray
-import org.json.JSONException
-import org.json.JSONObject
-
-import java.util.ArrayList
-import java.util.Collections
-import java.util.concurrent.ExecutionException
-
 import kotlinx.android.synthetic.main.activity_detail.*
-import kotlinx.coroutines.*
-import org.jetbrains.anko.longToast
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.net.URL
 
 /**
@@ -80,8 +69,8 @@ class DetailsActivity : Activity(), CoroutineScope {
     private val trailersURL = "http://api.themoviedb.org/3/movie/%d/videos?api_key=$API_KEY"
     private val reviewURL = "http://api.themoviedb.org/3/movie/%d/reviews?api_key=$API_KEY"
 
-    private val trailerList: MutableList<Result> = mutableListOf()
-    private val reviewList: MutableList<Review> = mutableListOf()
+    private val trailerList: MutableList<TrailerResult> = mutableListOf()
+    private val reviewList: MutableList<ReviewResult> = mutableListOf()
 
     private var trailerAdapter: TrailerAdapter? = null
     private var reviewAdapter: ReviewAdapter? = null
@@ -101,7 +90,7 @@ class DetailsActivity : Activity(), CoroutineScope {
         setContentView(R.layout.activity_detail)
 
         trailerAdapter = TrailerAdapter(trailerList, object : TrailerAdapter.OnItemClickListener {
-            override fun onItemClick(item: Result) {
+            override fun onItemClick(item: TrailerResult) {
                 val appIntent = Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + item.key))
                 val webIntent = Intent(Intent.ACTION_VIEW,
                         Uri.parse("http://www.youtube.com/watch?v=" + item.key))
@@ -110,7 +99,6 @@ class DetailsActivity : Activity(), CoroutineScope {
                 } catch (ex: ActivityNotFoundException) {
                     baseContext.startActivity(webIntent)
                 }
-
             }
         })
 
@@ -160,8 +148,8 @@ class DetailsActivity : Activity(), CoroutineScope {
 //                    Toast.makeText(applicationContext, "The movie is now added to favourites!", Toast.LENGTH_LONG).show()
 //                    favourite_fab.setImageDrawable(resources.getDrawable(android.R.drawable.btn_star_big_on))
 //                }
-        //}
-        //}
+        // }
+        // }
 
         trailer_recycler_view.adapter = trailerAdapter
         movieTrailerAddress = String.format(trailersURL, movie.id)
@@ -173,8 +161,9 @@ class DetailsActivity : Activity(), CoroutineScope {
         reviewAddress = String.format(reviewURL, movie.id)
         reviewList.clear()
 
-        reviewAdapter!!.notifyDataSetChanged()
+        getReviews()
 
+        reviewAdapter!!.notifyDataSetChanged()
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
@@ -185,15 +174,21 @@ class DetailsActivity : Activity(), CoroutineScope {
             rating_tv.text = savedInstanceState.getCharSequence("ratingTV")
             description_tv.text = savedInstanceState.getCharSequence("descriptionTV")
         }
-
-
     }
 
     private fun getTrailers() {
         launch {
             val result = withContext(Dispatchers.IO) { getResponseJSON(0) }
-            trailerList.addAll(Gson().fromJson(result, Trailer::class.java).results)
+            trailerList.addAll(Gson().fromJson(result, TrailerRequestResponse::class.java).trailerResults)
             trailerAdapter!!.notifyDataSetChanged()
+        }
+    }
+
+    private fun getReviews() {
+        launch {
+            val result = withContext(Dispatchers.IO) { getResponseJSON(1) }
+            reviewList.addAll(Gson().fromJson(result, ReviewDBResponse::class.java).reviewResults)
+            reviewAdapter!!.notifyDataSetChanged()
         }
     }
 
@@ -205,10 +200,10 @@ class DetailsActivity : Activity(), CoroutineScope {
         outState.putCharSequence("descriptionTV", description_tv.text)
     }
 
-    private fun getFilteredOutTrailers(videos: Array<Result>): Array<Result> {
-        val list: MutableList<Result> = mutableListOf()
+    private fun getFilteredOutTrailers(videos: Array<TrailerResult>): Array<TrailerResult> {
+        val list: MutableList<TrailerResult> = mutableListOf()
         for (trailer in videos) {
-            if (trailer.type == "Trailer") {
+            if (trailer.type == "trailer") {
                 list.add(trailer)
             }
         }
@@ -221,11 +216,6 @@ class DetailsActivity : Activity(), CoroutineScope {
             1 -> URL(reviewAddress).readText()
             else -> URL(trailersURL).readText()
         }
-    }
-
-    @Throws(JSONException::class)
-    private fun getReview(`object`: JSONObject): Review {
-        return Review(`object`.getString("id"), `object`.getString("author"), `object`.getString("content"), `object`.getString("url"))
     }
 
     fun isFavouritedAlready(movie: Movie): Boolean {
@@ -259,7 +249,6 @@ class DetailsActivity : Activity(), CoroutineScope {
 //            return false
 //        }
         return false
-
     }
 
     companion object {

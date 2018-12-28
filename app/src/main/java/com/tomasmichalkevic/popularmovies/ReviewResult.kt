@@ -42,4 +42,35 @@ package com.tomasmichalkevic.popularmovies
  * Created by tomasmichalkevic on 12/03/2018.
  */
 
-data class Review(val id: String, val author: String, val content: String, val url: String)
+import com.google.gson.annotations.SerializedName
+
+data class ReviewResult(
+    @SerializedName("author")
+    val _author: String = "",
+    @SerializedName("content")
+    val _content: String = "",
+    @SerializedName("id")
+    val _id: String = "",
+    @SerializedName("url")
+    val _url: String = ""
+) {
+
+    val author
+        get() = _author
+
+    val content
+        get() = _content
+
+    val id
+        get() = _id
+
+    val url
+        get() = _url
+
+    init {
+        this.author
+        this.content
+        this.id
+        this.url
+    }
+}

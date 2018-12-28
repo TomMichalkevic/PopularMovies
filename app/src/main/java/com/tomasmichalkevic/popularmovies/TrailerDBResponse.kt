@@ -44,20 +44,21 @@ import com.google.gson.annotations.SerializedName
  * Created by tomasmichalkevic on 01/03/2018.
  */
 
-data class Trailer(@SerializedName("id")
-                   private val _id: Int = 0,
-                   @SerializedName("results")
-                   private val _results: List<Result> = arrayListOf()) {
-
+data class TrailerRequestResponse(
+    @SerializedName("id")
+    private val _id: Int = 0,
+    @SerializedName("results")
+    private val _trailer_results: List<TrailerResult> = arrayListOf()
+) {
 
     val id
         get() = _id
 
-    val results
-        get() = _results
+    val trailerResults
+        get() = _trailer_results
 
     init {
         this.id
-        this.results
+        this.trailerResults
     }
 }

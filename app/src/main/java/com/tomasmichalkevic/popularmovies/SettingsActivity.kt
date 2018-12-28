@@ -97,7 +97,6 @@ class SettingsActivity : PreferenceActivity(), SharedPreferences.OnSharedPrefere
             favouriteViewPreference!!.isEnabled = state.getBoolean("checkboxEnabled")
             orderPreference!!.value = state.getString("orderValue")
         }
-
     }
 
     override fun onBackPressed() {

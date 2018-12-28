@@ -55,5 +55,4 @@ object JsonUtils {
         }
         return data
     }
-
 }

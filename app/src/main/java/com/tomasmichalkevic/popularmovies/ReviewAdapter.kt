@@ -49,7 +49,7 @@ import kotlinx.android.synthetic.main.review_item.view.*
  * Created by tomasmichalkevic on 12/03/2018.
  */
 
-class ReviewAdapter(private val reviewList: List<Review>) : RecyclerView.Adapter<ReviewAdapter.ViewHolder>() {
+class ReviewAdapter(private val reviewList: List<ReviewResult>) : RecyclerView.Adapter<ReviewAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReviewAdapter.ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.review_item, parent, false)
@@ -66,7 +66,7 @@ class ReviewAdapter(private val reviewList: List<Review>) : RecyclerView.Adapter
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
-        fun bind(review: Review) {
+        fun bind(review: ReviewResult) {
             itemView.author.text = review.author
             itemView.review_content.text = review.content
             itemView.review_url.text = review.url

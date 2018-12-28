@@ -4,39 +4,14 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.database.Cursor
 import android.net.ConnectivityManager
-import android.net.NetworkInfo
 import android.os.Bundle
 import android.preference.PreferenceManager
-import android.util.Log
-import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import com.google.gson.Gson
 
-import com.tomasmichalkevic.popularmovies.data.FavouritesContract
-import com.tomasmichalkevic.popularmovies.utils.JsonUtils
-import org.json.JSONException
-import org.json.JSONObject
-
-import java.util.ArrayList
-import java.util.Collections
-import java.util.concurrent.ExecutionException
-
-import com.tomasmichalkevic.popularmovies.data.FavouritesContract.FavouriteEntry.COLUMN_ADULT_MOVIE
-import com.tomasmichalkevic.popularmovies.data.FavouritesContract.FavouriteEntry.COLUMN_BACKDROP_PATH
-import com.tomasmichalkevic.popularmovies.data.FavouritesContract.FavouriteEntry.COLUMN_ID
-import com.tomasmichalkevic.popularmovies.data.FavouritesContract.FavouriteEntry.COLUMN_ORIGINAL_LANG
-import com.tomasmichalkevic.popularmovies.data.FavouritesContract.FavouriteEntry.COLUMN_ORIGINAL_TITLE
-import com.tomasmichalkevic.popularmovies.data.FavouritesContract.FavouriteEntry.COLUMN_OVERVIEW
-import com.tomasmichalkevic.popularmovies.data.FavouritesContract.FavouriteEntry.COLUMN_POPULARITY
-import com.tomasmichalkevic.popularmovies.data.FavouritesContract.FavouriteEntry.COLUMN_POSTER_PATH
-import com.tomasmichalkevic.popularmovies.data.FavouritesContract.FavouriteEntry.COLUMN_RELEASE_DATE
-import com.tomasmichalkevic.popularmovies.data.FavouritesContract.FavouriteEntry.COLUMN_TITLE
-import com.tomasmichalkevic.popularmovies.data.FavouritesContract.FavouriteEntry.COLUMN_VIDEO
-import com.tomasmichalkevic.popularmovies.data.FavouritesContract.FavouriteEntry.COLUMN_VOTE_AVERAGE
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.*
 import org.jetbrains.anko.longToast
@@ -62,7 +37,6 @@ class MainActivity : Activity(), CoroutineScope {
 
     private val favouriteMovies: Array<Movie> = arrayOf()
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -80,7 +54,7 @@ class MainActivity : Activity(), CoroutineScope {
         moviesList.clear()
         if (isNetworkAvailable(this)) {
             if (favouriteView) {
-                //getFavoriteMovies()
+                // getFavoriteMovies()
             } else {
                 getMovies()
             }
@@ -98,8 +72,8 @@ class MainActivity : Activity(), CoroutineScope {
     }
 
     private fun getMovies() {
-        launch{
-            val result = withContext(Dispatchers.IO){ getResponseJSON() }
+        launch {
+            val result = withContext(Dispatchers.IO) { getResponseJSON() }
             moviesList.addAll(Gson().fromJson(result, MovieDBResponse::class.java).results)
             longToast(moviesList.size.toString())
             movies_grid.adapter = movieAdapter
@@ -163,7 +137,6 @@ class MainActivity : Activity(), CoroutineScope {
         outState.putInt("position", listPosition)
     }
 
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val id = item.itemId
         if (id == R.id.action_settings) {
@@ -182,7 +155,6 @@ class MainActivity : Activity(), CoroutineScope {
             } else {
                 Toast.makeText(this, "Cannot refresh due to no network!", Toast.LENGTH_LONG).show()
             }
-
         }
     }
 
@@ -193,7 +165,7 @@ class MainActivity : Activity(), CoroutineScope {
         if (!favouriteView) {
             getMovies()
         } else {
-            //moviesArray = favouriteMovies
+            // moviesArray = favouriteMovies
         }
 
         movieAdapter!!.notifyDataSetChanged()
@@ -209,5 +181,4 @@ class MainActivity : Activity(), CoroutineScope {
             return activeNetwork != null && activeNetwork.isConnectedOrConnecting
         }
     }
-
 }

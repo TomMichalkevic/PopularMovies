@@ -2,14 +2,16 @@ package com.tomasmichalkevic.popularmovies
 
 import com.google.gson.annotations.SerializedName
 
-data class MovieDBResponse(@SerializedName("page")
-                           private var _page: Int = 0,
-                           @SerializedName("total_results")
-                           private var _totalResults: Int = 0,
-                           @SerializedName("total_pages")
-                           private var _totalPages: Int = 0,
-                           @SerializedName("results")
-                           private var _results: MutableList<Movie>? = mutableListOf()) {
+data class MovieDBResponse(
+    @SerializedName("page")
+    private var _page: Int = 0,
+    @SerializedName("total_results")
+    private var _totalResults: Int = 0,
+    @SerializedName("total_pages")
+    private var _totalPages: Int = 0,
+    @SerializedName("results")
+    private var _results: MutableList<Movie>? = mutableListOf()
+) {
 
     val page
         get() = _page
