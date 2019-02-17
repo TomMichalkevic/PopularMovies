@@ -179,7 +179,7 @@ class DetailsActivity : Activity(), CoroutineScope {
     private fun getTrailers() {
         launch {
             val result = withContext(Dispatchers.IO) { getResponseJSON(0) }
-            trailerList.addAll(Gson().fromJson(result, TrailerRequestResponse::class.java).trailerResults)
+            trailerList.addAll(getFilteredOutTrailers(Gson().fromJson(result, TrailerRequestResponse::class.java).trailerResults))
             trailerAdapter!!.notifyDataSetChanged()
         }
     }
@@ -200,14 +200,14 @@ class DetailsActivity : Activity(), CoroutineScope {
         outState.putCharSequence("descriptionTV", description_tv.text)
     }
 
-    private fun getFilteredOutTrailers(videos: Array<TrailerResult>): Array<TrailerResult> {
+    private fun getFilteredOutTrailers(videos: List<TrailerResult>): List<TrailerResult> {
         val list: MutableList<TrailerResult> = mutableListOf()
         for (trailer in videos) {
-            if (trailer.type == "trailer") {
+            if (trailer.type == "Trailer") {
                 list.add(trailer)
             }
         }
-        return list.toTypedArray()
+        return list
     }
 
     private fun getResponseJSON(choice: Int): String {
